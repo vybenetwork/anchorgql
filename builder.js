@@ -136,7 +136,7 @@ async function makeDirs(){
     }
 
 async function copyFiles(){
-    await fs.copyFile("./package.json", "./server/package.json")
+    await fs.copyFile("./template/package.json", "./server/package.json")
     await fs.copyFile("./template/helpers.js", "./server/helpers.js")
 
    }
@@ -144,14 +144,14 @@ async function copyFiles(){
 
 async function main(){
     const config = require('./config.json')
+    const projectName = config["PROJECT_NAME"]
+    const url = config["URL"]
+    const idlPath = config["IDL_PATH"]
 
-    const projectName = config["projectName"]
-    const url = config["url"]
-    const indexTemplateFile = config["indexTemplateFile"]
-    const typeDefTemplateFile = config["typeDefTemplateFile"]
-    const indexOutputFile = config["indexOutputFile"]
-    const typeDefOutputFile = config["typeDefOutputFile"]
-    const idlPath = config["idlPath"]
+    const indexTemplateFile = "./template/index-template.js"
+    const typeDefTemplateFile = "./template/typedef-template.js"
+    const indexOutputFile = "./server/index.js"
+    const typeDefOutputFile = "./server/root.js"
 
     const idlConfig = require(idlPath)
     await makeDirs()
