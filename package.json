@@ -1,0 +1,25 @@
+{
+  "name": "anchorgqlbuilder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "builder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://dassy4@bitbucket.org/serumpulse/anchorgqlbuilder.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/serumpulse/anchorgqlbuilder#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fs-extra": "^10.0.0",
+    "apollo-server": "^2.4.8",
+    "graphql": "^14.1.1",
+    "graphql-tag": "^2.10.1",
+    "graphql-type-long": "^0.1.1",
+    "node-fetch": "^2.3.0"
+  }
+}
