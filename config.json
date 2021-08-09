@@ -1,0 +1,9 @@
+{
+    "projectName" : "parrot",
+    "url" : "https://parrot-restapi1-2skizcvneq-uc.a.run.app",
+    "indexTemplateFile" : "./template/index-template.js",
+    "typeDefTemplateFile" : "./template/typedef-template.js",
+    "indexOutputFile" : "./server/index.js",
+    "typeDefOutputFile" : "./server/root.js",
+    "idlPath": "./idls/parrot.json"
+}

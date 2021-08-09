@@ -143,18 +143,21 @@ async function copyFiles(){
 
 
 async function main(){
-    const config = require('./idls/parrot.json')
-    const projectName = "parrot"
-    const url = "https://parrot-restapi1-2skizcvneq-uc.a.run.app"
-    const indexTemplateFile = "./template/index-template.js"
-    const typeDefTemplateFile = "./template/typedef-template.js"
-    const indexOutputFile = "./server/index.js"
-    const typeDefOutputFile = "./server/root.js"
+    const config = require('./config.json')
 
+    const projectName = config["projectName"]
+    const url = config["url"]
+    const indexTemplateFile = config["indexTemplateFile"]
+    const typeDefTemplateFile = config["typeDefTemplateFile"]
+    const indexOutputFile = config["indexOutputFile"]
+    const typeDefOutputFile = config["typeDefOutputFile"]
+    const idlPath = config["idlPath"]
+
+    const idlConfig = require(idlPath)
     await makeDirs()
     await copyFiles()
-    await buildTypeDef(typeDefTemplateFile,typeDefOutputFile,config,projectName)
-    await buildResolvers(indexTemplateFile,indexOutputFile,config,projectName,url)
+    await buildTypeDef(typeDefTemplateFile,typeDefOutputFile,idlConfig,projectName)
+    await buildResolvers(indexTemplateFile,indexOutputFile,idlConfig,projectName,url)
 
 }
 
