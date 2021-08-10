@@ -32,17 +32,17 @@ async function getAccountRootTypes(config){
 }
 
 async function getQueryType(name){
-    return [["Query",{[name]:"Root"}]] 
+    return [["Query",{[name]:name.charAt(0).toUpperCase() + name.slice(1)}]] 
 }
 
-async function getRootType(config){
+async function getRootType(config,name){
     let accountNames = config['accounts'].map(x => {
        return {
             [x.name.charAt(0).toLowerCase() + x.name.slice(1)]:"["+x.name+"]"
        } 
     })
     accountNames.push({"config":"Config"})
-    return [["Root",Object.assign({}, ...accountNames)]]
+    return [[name.charAt(0).toUpperCase() + name.slice(1),Object.assign({}, ...accountNames)]]
 
 }
 
@@ -94,7 +94,7 @@ async function buildType(mapping){
 
 async function buildTypeDef(typeDefTemplateFile,typeDefOutputFile,config,projectName){
     let query = await getQueryType(projectName)
-    let root = await getRootType(config)
+    let root = await getRootType(config,projectName)
     let accountRoot = await getAccountRootTypes(config)
     let account = await getAccountTypes(config)
     let types = await getTypes(config)
@@ -121,6 +121,7 @@ async function buildResolvers(indexTemplateFile,indexOutputFile,config,projectNa
     let codeString = split[0]
     .replace(/__URL__/g, url)
     .replace(/__PROJECTNAME__/g, projectName)
+    .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1))
     let accountNames = config['accounts'].map(x => x['name'])
     for(let x of accountNames){
         var result = split[1].replace(/__ACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));

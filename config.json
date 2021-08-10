@@ -1,5 +1,5 @@
 {
-    "PROJECT_NAME" : "parrot",
-    "URL" : "https://parrot-restapi1-2skizcvneq-uc.a.run.app",
-    "IDL_PATH": "./idls/parrot.json"
+    "PROJECT_NAME" : "stake",
+    "URL" : "https://stakerest-2skizcvneq-uc.a.run.app",
+    "IDL_PATH": "./idls/registry.json"
 }

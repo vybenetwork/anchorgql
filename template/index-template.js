@@ -9,7 +9,7 @@ const resolvers = {
     Query:{
         __PROJECTNAME__:()=>({})
     },
-    Root: {
+    __ROOTNAME__: {
 
         ///--------------------///
 
