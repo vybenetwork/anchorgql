@@ -1,7 +1,14 @@
 const { promises: fs } = require("fs");
-
+const _ = require("lodash")
 //** Edit this to change your server directory */
 const subDir = "./server"
+
+
+
+function convertPascal(value){
+    return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 
 async function getAccountTypes(config){
     let mapping = config['accounts'].map(x => {
@@ -32,13 +39,13 @@ async function getAccountRootTypes(config){
 }
 
 async function getQueryType(name){
-    return [["Query",{[name]:name.charAt(0).toUpperCase() + name.slice(1)}]] 
+    return [["Query",{[name]:convertPascal(name)}]] 
 }
 
 async function getRootType(config,name){
     let accountNames = config['accounts'].map(x => {
        return {
-            [x.name.charAt(0).toLowerCase() + x.name.slice(1)]:"["+x.name+"]"
+            [_.camelCase(x["name"])]:"["+x.name+"]"
        } 
     })
     accountNames.push({"config":"Config"})
@@ -61,31 +68,36 @@ async function getTypes(config){
 
         } else if(x['type']['kind'] === 'enum'){
             // fix this, not using variants
-            typeArr.push(["enum",x['name'],x['type']["variants"].map(x=> [x.name.charAt(0).toLowerCase() + x.name.slice(1)])])
-            let variants = x['type']['variants'].map(y => {
+            let mainTypeFields = x['type']["variants"].map(x=> {
+                return {
+                    [_.camelCase(x['name'])]:x.name
+                }
+            })
+            typeArr.push([x["name"],Object.assign({}, ...mainTypeFields)])
+
+            for(let y of x['type']['variants']){
                 if("fields" in y){
                     let name = y['name']
                     let values = y['fields'].map(z => {
                         return {
-                            [z['name']]:"String"
+                            [_.camelCase(z['name'])]:"String"
                         }
                     })
                     typeArr.push([name,Object.assign({}, ...values)])
                 }
-            })
+                else{
+                    typeArr.push([y["name"],{"_":"Boolean"}])
+                }
+            }
         }
     }
     return typeArr 
 }
 
 async function buildType(mapping){
-    // console.log(mapping)
+    console.log(mapping)
     let stringType = mapping.map(x =>{
-        if(x[0]==="enum"){
-            return `\nenum ${x[1]} {\n${"    "+x[2].join('\n    ')} \n}\n`.replace(/['",]+/g, '');
-        } else{
-            return `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
-        }
+        return `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
     })
     
     return stringType
