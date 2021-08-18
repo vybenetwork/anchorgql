@@ -15,6 +15,6 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/serumpulse/anchorgqlbuilder#readme",
   "dependencies": {
-    "loadash": "^1.0.0",
+    "loadash": "^1.0.0"
   }
 }
