@@ -1,7 +1,6 @@
 {
   "name": "anchorgqlbuilder",
   "version": "1.0.0",
-  "description": "",
   "main": "builder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,5 +15,7 @@
   "homepage": "https://bitbucket.org/serumpulse/anchorgqlbuilder#readme",
   "dependencies": {
     "loadash": "^1.0.0"
-  }
+  },
+  "devDependencies": {},
+  "description": ""
 }
