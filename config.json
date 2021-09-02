@@ -1,5 +1,7 @@
 {
-    "PROJECT_NAME" : "stake",
-    "URL" : "https://stakerest-2skizcvneq-uc.a.run.app",
-    "IDL_PATH": "./idls/registry.json"
+    "PROJECT_NAME" : "parrot",
+    "PROGRAM_ID" : "HajXYaDXmohtq2ZxZ6QVNEpqNn1T53Zc9FnR1CnaNnUf",
+    "ANCHOR_VERSION" : "0.11.1",
+    "ANCHOR_PROVIDER_URL" : "https://api.mainnet-beta.solana.com",
+    "IDL_PATH": "./idls/parrot.json"
 }

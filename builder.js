@@ -45,7 +45,7 @@ async function getQueryType(name){
 async function getRootType(config,name){
     let accountNames = config['accounts'].map(x => {
        return {
-            [_.camelCase(x["name"])]:"["+x.name+"]"
+            [_.camelCase(x["name"])+" (id: String)"]:"["+x.name+"]"
        } 
     })
     accountNames.push({"config":"Config"})
@@ -95,7 +95,6 @@ async function getTypes(config){
 }
 
 async function buildType(mapping){
-    console.log(mapping)
     let stringType = mapping.map(x =>{
         return `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
     })
@@ -146,11 +145,18 @@ async function buildResolvers(indexTemplateFile,indexOutputFile,config,projectNa
 
 async function makeDirs(){
     await fs.mkdir(subDir, {recursive:true})    
+    await fs.mkdir(subDir+"/idls", {recursive:true})   
     }
 
-async function copyFiles(){
-    await fs.copyFile("./template/package.json", "./server/package.json")
+async function copyFiles(config){
+    await fs.copyFile("./template/package-template.json", "./server/package.json")
+    let data = await fs.readFile(subDir+`/package.json`, 'utf8')
+    var result = data.replace(/__YOURANCHORPROVIDERURL__/g,config['ANCHOR_PROVIDER_URL']);
+    console.log(result)
+    await fs.writeFile(subDir+`/package.json`, result)
     await fs.copyFile("./template/helpers.js", "./server/helpers.js")
+    console.log(config)
+    await fs.copyFile(config['IDL_PATH'], "./server"+(config['IDL_PATH'].substring(1)))
 
    }
 
@@ -168,7 +174,7 @@ async function main(){
 
     const idlConfig = require(idlPath)
     await makeDirs()
-    await copyFiles()
+    await copyFiles(config)
     await buildTypeDef(typeDefTemplateFile,typeDefOutputFile,idlConfig,projectName)
     await buildResolvers(indexTemplateFile,indexOutputFile,idlConfig,projectName,url)
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "ANCHOR_PROVIDER_URL=__YOURANCHORPROVIDERURL__ node index.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,9 @@
     "graphql": "^14.1.1",
     "graphql-tag": "^2.10.1",
     "graphql-type-long": "^0.1.1",
-    "node-fetch": "^2.3.0"
+    "node-fetch": "^2.3.0",
+    "@project-serum/anchor": "0.11.1",
+    "@project-serum/common": "0.0.1-beta.3",
+    "bn.js": "^5.2.0"
   }
 }
