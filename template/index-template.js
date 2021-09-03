@@ -16,9 +16,9 @@ function pubKeyBigNumTransform(o) {
         if (o[k] instanceof PublicKey) {
             o[k] = o[k].toBase58();
         }
-        if (o[k] instanceof BN) {
-            o[k] = parseInt(o[k]);
-        }
+        // if (o[k] instanceof BN) {
+        //     o[k] = parseInt(o[k]);
+        // }
         if (o[k] !== null && typeof o[k] === 'object') {
             pubKeyBigNumTransform(o[k]);
         }

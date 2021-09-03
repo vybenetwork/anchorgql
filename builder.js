@@ -152,10 +152,8 @@ async function copyFiles(config){
     await fs.copyFile("./template/package-template.json", "./server/package.json")
     let data = await fs.readFile(subDir+`/package.json`, 'utf8')
     var result = data.replace(/__YOURANCHORPROVIDERURL__/g,config['ANCHOR_PROVIDER_URL']);
-    console.log(result)
     await fs.writeFile(subDir+`/package.json`, result)
     await fs.copyFile("./template/helpers.js", "./server/helpers.js")
-    console.log(config)
     await fs.copyFile(config['IDL_PATH'], "./server"+(config['IDL_PATH'].substring(1)))
 
    }
