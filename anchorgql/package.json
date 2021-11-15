@@ -14,6 +14,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/serumpulse/anchorgqlbuilder#readme",
   "dependencies": {
+    "fs-extra": "^10.0.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {},

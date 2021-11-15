@@ -10,7 +10,6 @@ scalar JSON
 type Config {
     provider: String
     programId: String
-    anchorVersion: String
 }
 `
 

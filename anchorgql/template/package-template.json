@@ -22,7 +22,7 @@
     "graphql-tag": "^2.10.1",
     "graphql-type-json": "^0.3.2",
     "node-fetch": "^2.3.0",
-    "@project-serum/anchor": "__ANCHORVERSION__",
+    "@project-serum/anchor": "0.14.0",
     "@project-serum/common": "0.0.1-beta.3",
     "bn.js": "^5.2.0"
   }

@@ -1,7 +1,0 @@
-{
-    "PROJECT_NAME" : "jet",
-    "PROGRAM_ID" : "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU",
-    "ANCHOR_VERSION" : "0.14.0",
-    "ANCHOR_PROVIDER_URL" : "https://api.devnet.solana.com",
-    "IDL_PATH": "./idls/jet.json"
-}
