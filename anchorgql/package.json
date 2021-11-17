@@ -4,7 +4,8 @@
   "main": "builder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node builder.js "
+    "build": "npm install && ts-node ./src/builder.ts",
+    "start": ""
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,13 @@
     "fs-extra": "^10.0.0",
     "lodash": "^4.17.21"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/lodash": "^4.14.177",
+    "@types/node": "^16.11.7",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  },
   "description": ""
 }
