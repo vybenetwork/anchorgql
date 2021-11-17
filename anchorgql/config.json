@@ -1,1 +1,1 @@
-{"PROJECT_NAME": "jet", "PROGRAM_ID": "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU", "ANCHOR_VERSION": "0.14.0", "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com", "IDL_PATH": "./idls/jet.json", "IDL": null, "PORT": 51305}
+{"PROJECT_NAME": "parrot", "PROGRAM_ID": "HajXYaDXmohtq2ZxZ6QVNEpqNn1T53Zc9FnR1CnaNnUf", "ANCHOR_VERSION": "0.14.0", "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com", "IDL_PATH": "./idls/parrot.json", "IDL": null, "PORT": 51306}
