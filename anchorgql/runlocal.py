@@ -1,9 +1,9 @@
 import json
 import subprocess
 
-f = open('config.json')
+f = open('./src/config.json')
 config = json.load(f)
 
-subprocess.run("npm install && node builder.js",shell=True)
-subprocess.run("npm install && npm start", cwd="channel_"+config['PROJECT_NAME'],shell=True)
+subprocess.run("npm install && npm start",shell=True)
+subprocess.run("npm install && npm start", cwd="./src/channel_"+config['projectName'],shell=True)
 
