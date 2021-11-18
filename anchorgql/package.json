@@ -4,8 +4,7 @@
   "main": "builder.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm install && ts-node ./src/builder.ts",
-    "start": ""
+    "start": "npm install && ts-node ./src/builder.ts"
   },
   "repository": {
     "type": "git",

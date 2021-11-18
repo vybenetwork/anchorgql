@@ -6,7 +6,6 @@ import {
   IdlTypeDefined,
   IdlTypeVec,
   Operations,
-  IdlEnumFieldsNamed,
   IdlTypeOption,
 } from "./types";
 import { readFile, writeFile, copyFile, mkdir } from "fs/promises";
@@ -14,9 +13,6 @@ import { camelCase } from "lodash";
 
 //** Edit this to change your server directory */
 const subDir = "./src/channel_" + config.projectName;
-
-// const serverCert = "./template/server_local.crt"
-// const serverKey = "./template/server_local.key"
 
 function convertPascal(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -55,17 +51,9 @@ function getKeyForIdlObjectType(
 }
 
 function getGqlTypeForIdlScalarType(idlType: IdlType): string {
-  const stringTypes = [
-    "u64",
-    "i64",
-    "u128",
-    "i128",
-    "bytes",
-    "string",
-    "publicKey",
-  ];
-
+  const stringTypes = ["bytes", "string", "publicKey"];
   const intTypes = ["u8", "i8", "u16", "i16", "u32", "i32"];
+  const bigIntTypes = ["u64", "i64", "u128", "i128"];
 
   const idlTypeStringified = idlType as string;
 
@@ -73,6 +61,8 @@ function getGqlTypeForIdlScalarType(idlType: IdlType): string {
     return "String";
   } else if (intTypes.includes(idlTypeStringified)) {
     return "Int";
+  } else if (bigIntTypes.includes(idlTypeStringified)) {
+    return "BigInt";
   } else {
     throw `Unable to map ${idlType.toString} IDL type to it's corresponding GQL Type`;
   }
@@ -222,10 +212,6 @@ async function getTypes(): Promise<Operations> {
                     [camelCase(castedIdlField.name)]:
                       getGqlTypeForIdlScalarType(castedIdlField.type),
                   };
-                  // return {
-                  //   // add logic to apply the gql type here
-                  //   [camelCase(z["name"])]: castedIdlField.type,
-                  // };
                 }
               } else {
                 return {
@@ -239,6 +225,7 @@ async function getTypes(): Promise<Operations> {
               Object.assign({}, ...values),
             ]);
           } else {
+            //TODO: apply a fix here
             typeArr.push([
               convertPascal(projectName) + "_" + y["name"],
               { _: "Boolean" },
@@ -362,8 +349,6 @@ async function copyFiles() {
     subDir + "/tsconfig.json"
   );
   await copyFile("./src/config.json", subDir + "/src/config.json");
-  //await copyFile(config.serverCert, subDir + "/server.crt");
-  //await copyFile(config.serverCertKey, subDir + "/server.key");
 }
 
 async function main() {
@@ -374,6 +359,7 @@ async function main() {
   await copyFiles();
   await buildTypeDef(config.typeDefTemplateFile, typeDefOutputFile);
   await buildResolvers(config.indexTemplateFile, indexOutputFile);
+  console.log("Successfully generated the new graphql project");
 }
 
 let idlConfig = null;

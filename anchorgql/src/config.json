@@ -9,7 +9,5 @@
   "packageJsonTemplateFile": "./src/template/package-template.json",
   "indexTemplateFile": "./src/template/index-template.ts",
   "typeDefTemplateFile": "./src/template/typedef-template.ts",
-  "configFile": "./src/config.ts",
-  "serverCert": "./src/template/server.crt",
-  "serverCertKey": "./src/template/server.key"
+  "configFile": "./src/config.ts"
 }

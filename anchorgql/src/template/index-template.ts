@@ -1,18 +1,17 @@
 import { ApolloServer } from "apollo-server-express";
 import express from "express";
-import anchor from "@project-serum/anchor";
+import { Provider, setProvider, web3, Program } from "@project-serum/anchor";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import http from "http";
 import { readFileSync } from "fs";
 import configVars from "./config.json";
 
-const provider = anchor.Provider.env();
-anchor.setProvider(provider);
+const provider = Provider.env();
+setProvider(provider);
 
-const idl = JSON.parse(readFileSync(configVars["IDL_PATH"], "utf8"));
-const programId = new anchor.web3.PublicKey(configVars["PROGRAM_ID"]);
-const client = new anchor.Program(idl, programId);
+const idl = JSON.parse(readFileSync(configVars.idlPath, "utf8"));
+const programId = new web3.PublicKey(configVars.programID);
+const client = new Program(idl, programId);
 const LOG_START_INDEX = "Program log: ".length;
 const eventParser = true;
 let globalEvents = [];
@@ -82,7 +81,7 @@ async function parseEvents() {
   Don't Move around this code. The code to create resolvers makes assumptions on this code 
   located here
  */
-import { typeDefs } from "./root.js";
+import { typeDefs } from "./root";
 
 const resolvers = {
   Query: {
@@ -96,7 +95,7 @@ const resolvers = {
     ///----------ACCOUNT_RESOLVERS----------///
 
     ///----------EVENT_RESOLVER----------///
-    events: async () => {
+    events: async (_) => {
       return globalEvents.sort((a, b) => b.ts - a.ts);
     },
     ///----------EVENT_RESOLVER----------///
@@ -128,14 +127,13 @@ async function startApolloServer() {
   const app = express();
   server.applyMiddleware({ app });
 
-  // Create the HTTPS or HTTP server, per configuration
-  let httpServer = http.createServer(app);
+  app.listen(config.port, () => {
+    console.log(
+      "🚀 Server ready at",
+      `http://${config.hostname}:${config.port}${server.graphqlPath}`
+    );
+  });
 
-  await new Promise(() => httpServer.listen());
-  console.log(
-    "🚀 Server ready at",
-    `http://${config.hostname}:${config.port}${server.graphqlPath}`
-  );
   return { server, app };
 }
 

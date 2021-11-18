@@ -21,10 +21,11 @@
 
 # Maven
 target/
-# dist/
+dist/
 
 # JetBrains IDE
 .idea/
+.vscode/
 
 # Unit test reports
 TEST*.xml
@@ -49,3 +50,4 @@ Thumbs.db
 *.wmv
 channel_*
 node_modules
+
