@@ -53,7 +53,7 @@ function getGqlTypeForIdlScalarType(idlType: IdlType): string {
     } else if (bigIntTypes.includes(idlTypeStringified)) {
         return 'BigInt';
     } else {
-        throw `Unable to map ${idlType.toString} IDL type to it's corresponding GQL Type`;
+        return '[String]';
     }
 }
 
