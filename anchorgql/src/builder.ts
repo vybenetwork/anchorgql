@@ -163,7 +163,7 @@ async function getTypes(): Promise<Operations> {
             } else if (x.type.kind === 'enum') {
                 let mainTypeFields = x.type.variants.map((x) => {
                     return {
-                        [camelCase(x.name)]: '[' + convertPascal(projectName) + '_' + x.name + ']',
+                        [camelCase(x.name)]: convertPascal(projectName) + '_' + x.name,
                     };
                 });
                 typeArr.push([convertPascal(projectName) + '_' + x.name, Object.assign({}, ...mainTypeFields)]);
