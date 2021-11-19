@@ -1,0 +1,830 @@
+{
+    "version": "0.0.0",
+    "name": "asol",
+    "instructions": [
+      {
+        "name": "newAggregate",
+        "accounts": [
+          {
+            "name": "aggregate",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "crateMint",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "crateToken",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "redeemInKind",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "payer",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "admin",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "crateTokenProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "aggBump",
+            "type": "u8"
+          },
+          {
+            "name": "crateBump",
+            "type": "u8"
+          }
+        ]
+      },
+      {
+        "name": "addStakePool",
+        "accounts": [
+          {
+            "name": "aggregate",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "stakePool",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "mint",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "curator",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "payer",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "accountingMethod",
+            "type": {
+              "defined": "AccountingMethod"
+            }
+          }
+        ]
+      },
+      {
+        "name": "setCurator",
+        "accounts": [
+          {
+            "name": "aggregate",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "curatorSetter",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "nextCurator",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "mintLido",
+        "accounts": [
+          {
+            "name": "mintAsol",
+            "accounts": [
+              {
+                "name": "aggregate",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "stakePool",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "stakePoolTokens",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "crateToken",
+                "isMut": false,
+                "isSigner": false
+              },
+              {
+                "name": "crateMint",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "depositor",
+                "isMut": true,
+                "isSigner": true
+              },
+              {
+                "name": "depositorSource",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "mintDestination",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "tokenProgram",
+                "isMut": false,
+                "isSigner": false
+              },
+              {
+                "name": "crateTokenProgram",
+                "isMut": false,
+                "isSigner": false
+              }
+            ]
+          },
+          {
+            "name": "sync",
+            "accounts": [
+              {
+                "name": "marinade",
+                "accounts": [
+                  {
+                    "name": "marinade",
+                    "isMut": false,
+                    "isSigner": false
+                  },
+                  {
+                    "name": "marinadeStakePoolTokens",
+                    "isMut": false,
+                    "isSigner": false
+                  }
+                ]
+              },
+              {
+                "name": "lido",
+                "accounts": [
+                  {
+                    "name": "lido",
+                    "isMut": false,
+                    "isSigner": false
+                  },
+                  {
+                    "name": "lidoStakePoolTokens",
+                    "isMut": false,
+                    "isSigner": false
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "depositAmount",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "mintMarinade",
+        "accounts": [
+          {
+            "name": "mintAsol",
+            "accounts": [
+              {
+                "name": "aggregate",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "stakePool",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "stakePoolTokens",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "crateToken",
+                "isMut": false,
+                "isSigner": false
+              },
+              {
+                "name": "crateMint",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "depositor",
+                "isMut": true,
+                "isSigner": true
+              },
+              {
+                "name": "depositorSource",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "mintDestination",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "tokenProgram",
+                "isMut": false,
+                "isSigner": false
+              },
+              {
+                "name": "crateTokenProgram",
+                "isMut": false,
+                "isSigner": false
+              }
+            ]
+          },
+          {
+            "name": "sync",
+            "accounts": [
+              {
+                "name": "marinade",
+                "accounts": [
+                  {
+                    "name": "marinade",
+                    "isMut": false,
+                    "isSigner": false
+                  },
+                  {
+                    "name": "marinadeStakePoolTokens",
+                    "isMut": false,
+                    "isSigner": false
+                  }
+                ]
+              },
+              {
+                "name": "lido",
+                "accounts": [
+                  {
+                    "name": "lido",
+                    "isMut": false,
+                    "isSigner": false
+                  },
+                  {
+                    "name": "lidoStakePoolTokens",
+                    "isMut": false,
+                    "isSigner": false
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "args": [
+          {
+            "name": "depositAmount",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "printAggregateInfo",
+        "accounts": [
+          {
+            "name": "mintAsol",
+            "accounts": [
+              {
+                "name": "aggregate",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "stakePool",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "stakePoolTokens",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "crateToken",
+                "isMut": false,
+                "isSigner": false
+              },
+              {
+                "name": "crateMint",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "depositor",
+                "isMut": true,
+                "isSigner": true
+              },
+              {
+                "name": "depositorSource",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "mintDestination",
+                "isMut": true,
+                "isSigner": false
+              },
+              {
+                "name": "tokenProgram",
+                "isMut": false,
+                "isSigner": false
+              },
+              {
+                "name": "crateTokenProgram",
+                "isMut": false,
+                "isSigner": false
+              }
+            ]
+          },
+          {
+            "name": "sync",
+            "accounts": [
+              {
+                "name": "marinade",
+                "accounts": [
+                  {
+                    "name": "marinade",
+                    "isMut": false,
+                    "isSigner": false
+                  },
+                  {
+                    "name": "marinadeStakePoolTokens",
+                    "isMut": false,
+                    "isSigner": false
+                  }
+                ]
+              },
+              {
+                "name": "lido",
+                "accounts": [
+                  {
+                    "name": "lido",
+                    "isMut": false,
+                    "isSigner": false
+                  },
+                  {
+                    "name": "lidoStakePoolTokens",
+                    "isMut": false,
+                    "isSigner": false
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "args": []
+      }
+    ],
+    "accounts": [
+      {
+        "name": "Aggregate",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "crateToken",
+              "type": "publicKey"
+            },
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "curator",
+              "type": "publicKey"
+            },
+            {
+              "name": "curatorSetter",
+              "type": "publicKey"
+            },
+            {
+              "name": "stakePools",
+              "type": {
+                "vec": {
+                  "defined": "StakePoolMeta"
+                }
+              }
+            },
+            {
+              "name": "latestSnapshot",
+              "type": {
+                "defined": "Snapshot"
+              }
+            },
+            {
+              "name": "latestSnapshotTs",
+              "type": "i64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "StakePool",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "aggregate",
+              "type": "publicKey"
+            },
+            {
+              "name": "mint",
+              "type": "publicKey"
+            },
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "accountingMethod",
+              "type": {
+                "defined": "AccountingMethod"
+              }
+            },
+            {
+              "name": "stats",
+              "type": {
+                "defined": "StakePoolStats"
+              }
+            },
+            {
+              "name": "latestSnapshot",
+              "type": {
+                "defined": "StakePoolStateSnapshot"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "types": [
+      {
+        "name": "Snapshot",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "balanceSol",
+              "type": {
+                "defined": "SOL"
+              }
+            },
+            {
+              "name": "supply",
+              "type": {
+                "defined": "ASOL"
+              }
+            },
+            {
+              "name": "stakePools",
+              "type": {
+                "vec": {
+                  "defined": "StakePoolSnapshot"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "StakePoolSnapshot",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "poolMint",
+              "type": "publicKey"
+            },
+            {
+              "name": "poolBalance",
+              "type": "u64"
+            },
+            {
+              "name": "solFor1e9",
+              "type": {
+                "defined": "SOL"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "StakePoolMeta",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "mint",
+              "type": "publicKey"
+            },
+            {
+              "name": "accountingMethod",
+              "type": {
+                "defined": "AccountingMethod"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "StakePoolStats",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "totalAmountDeposited",
+              "type": "u64"
+            },
+            {
+              "name": "totalAmountMinted",
+              "type": {
+                "defined": "ASOL"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "StakePoolStateSnapshot",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "aggregateBalanceSol",
+              "type": {
+                "defined": "SOL"
+              }
+            },
+            {
+              "name": "aggregateSupply",
+              "type": {
+                "defined": "ASOL"
+              }
+            },
+            {
+              "name": "snapshot",
+              "type": {
+                "defined": "StakePoolSnapshot"
+              }
+            },
+            {
+              "name": "snapshotTs",
+              "type": "i64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "SOL",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "amount",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "ASOL",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "amount",
+              "type": "u64"
+            }
+          ]
+        }
+      },
+      {
+        "name": "AccountingMethod",
+        "type": {
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Marinade"
+            },
+            {
+              "name": "Lido"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "NewAggregateEvent",
+        "fields": [
+          {
+            "name": "aggregate",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "curator",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "timestamp",
+            "type": "i64",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "AddStakePoolEvent",
+        "fields": [
+          {
+            "name": "aggregate",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "stakePool",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "curator",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "mint",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "accountingMethod",
+            "type": {
+              "defined": "AccountingMethod"
+            },
+            "index": false
+          },
+          {
+            "name": "timestamp",
+            "type": "i64",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "SetCuratorEvent",
+        "fields": [
+          {
+            "name": "aggregate",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "curator",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "previousCurator",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "curatorSetter",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "timestamp",
+            "type": "i64",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "MintASolEvent",
+        "fields": [
+          {
+            "name": "depositor",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "stakePoolMint",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "accountingMethod",
+            "type": {
+              "defined": "AccountingMethod"
+            },
+            "index": false
+          },
+          {
+            "name": "depositAmount",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "mintAmount",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "timestamp",
+            "type": "i64",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "AggregateInfoEvent",
+        "fields": [
+          {
+            "name": "snapshot",
+            "type": {
+              "defined": "Snapshot"
+            },
+            "index": false
+          },
+          {
+            "name": "timestamp",
+            "type": "i64",
+            "index": false
+          }
+        ]
+      }
+    ],
+    "errors": [
+      {
+        "code": 300,
+        "name": "UnauthorizedNotCurator",
+        "msg": "Must be curator."
+      },
+      {
+        "code": 301,
+        "name": "UnauthorizedNotCuratorSetter",
+        "msg": "Must be curator setter."
+      },
+      {
+        "code": 302,
+        "name": "PoolNotFoundInSnapshot",
+        "msg": "Pool not found in snapshot."
+      },
+      {
+        "code": 303,
+        "name": "PoolAlreadyAdded",
+        "msg": "Cannot add a pool that has already been added."
+      }
+    ]
+  }
