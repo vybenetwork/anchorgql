@@ -1,4 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
+import { BigIntResolver } from 'graphql-scalars';
 import express from 'express';
 import { AddressInfo } from 'net';
 import { Provider, setProvider, web3, Program } from '@project-serum/anchor';
@@ -85,6 +86,7 @@ async function parseEvents() {
 import { typeDefs } from './root';
 
 const resolvers = {
+    BigInt: BigIntResolver,
     Query: {
         __PROJECTNAME__: () => ({}),
     },
