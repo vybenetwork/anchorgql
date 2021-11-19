@@ -1,13 +1,1 @@
-{
-    "projectName": "swch",
-    "programID": "8vEn7G6266EyzZroLGdMdi1fRfT7fJmRDKKTUHDc5YFz",
-    "anchorVersion": "0.14.0",
-    "anchorProviderURL": "https://api.mainnet-beta.solana.com",
-    "idlPath": "./src/idls/switchboard.json",
-    "idl": null,
-    "port": 51305,
-    "packageJsonTemplateFile": "./src/template/package-template.json",
-    "indexTemplateFile": "./src/template/index-template.ts",
-    "typeDefTemplateFile": "./src/template/typedef-template.ts",
-    "configFile": "./src/config.ts"
-}
+{"projectName": "asol_mainnet", "programId": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE", "anchorProviderURL": "https://api.mainnet-beta.solana.com", "idlPath": "./src/idls/asol.json", "anchorVersion": "0.14.0", "idl": null, "port": 51305, "packageJsonTemplateFile": "./src/template/package-template.json", "indexTemplateFile": "./src/template/index-template.ts", "typeDefTemplateFile": "./src/template/typedef-template.ts", "configFile": "./src/config.ts"}
