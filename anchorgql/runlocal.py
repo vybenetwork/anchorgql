@@ -41,7 +41,9 @@ def create_project_config(path, content):
 
 
 def main():
-    # On Windows, if an error happens where the channels file isn't found, comment out the line below.
+    # On Windows, if an error happens where the channels file isn't found, you probably opened the project
+    # from the wrong directory. Either try reopening the project from the correct directory or play with the
+    # line below.
     # os.chdir('./anchorgql')
     config = json.load(open('channels.json'))
     channels_config = config['channels']
