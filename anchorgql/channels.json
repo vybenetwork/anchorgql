@@ -1,0 +1,114 @@
+{
+    "anchorVersion": "0.14.0",
+    "idl": null,
+    "port": 51305,
+    "packageJsonTemplateFile": "./src/template/package-template.json",
+    "indexTemplateFile": "./src/template/index-template.ts",
+    "typeDefTemplateFile": "./src/template/typedef-template.ts",
+    "configFile": "./src/config.ts",
+    "testMode": true,
+    "channels": [
+        {
+            "PROJECT_NAME": "jet_devnet",
+            "PROGRAM_ID": "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/jet.json"
+        },
+        {
+            "PROJECT_NAME": "jet_mainnet",
+            "PROGRAM_ID": "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/jet.json"
+        },
+        {
+            "PROJECT_NAME": "parrot_mainnet",
+            "PROGRAM_ID": "HajXYaDXmohtq2ZxZ6QVNEpqNn1T53Zc9FnR1CnaNnUf",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/parrot.json"
+        },
+        {
+            "PROJECT_NAME": "serum_registry_mainnet",
+            "PROGRAM_ID": "GrAkKfEpTKQuVHG2Y97Y2FF4i7y7Q5AHLK94JBy7Y5yv",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/registry.json"
+        },
+        {
+            "PROJECT_NAME": "serum_lockup_mainnet",
+            "PROGRAM_ID": "6ebQNeTPZ1j7k3TtkCCtEPRvG7GQsucQrZ7sSEDQi9Ks",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/lockup.json"
+        },
+        {
+            "PROJECT_NAME": "cyclos_mainnet",
+            "PROGRAM_ID": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/cyclos.json"
+        },
+        {
+            "PROJECT_NAME": "cyclos_devnet",
+            "PROGRAM_ID": "CTNBreR3GXkTb8VxJjGHLiGsXV9ffMnkMA5G9n9nqJ6M",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/cyclos.json"
+        },
+        {
+            "PROJECT_NAME": "synthetify_exchange_mainnet",
+            "PROGRAM_ID": "5TeGDBaMNPc2uxvx6YLDycsoxFnBuqierPt3a8Bk4xFX",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/synthetify_exchange.json"
+        },
+        {
+            "PROJECT_NAME": "synthetify_exchange_devnet",
+            "PROGRAM_ID": "HcyCw29qWC77CTnmJkwjnW1whbTppv4xh2SQQzjMin55",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/synthetify_exchange.json"
+        },
+        {
+            "PROJECT_NAME": "synthetify_exchangeauthority_devnet",
+            "PROGRAM_ID": "6dcLU83ferGcEAjeUeLuJ8q7JbSV2vK3EGajW895tZBj",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/synthetify_manager.json"
+        },
+        {
+            "PROJECT_NAME": "synthetify_exchangeauthority_mainnet",
+            "PROGRAM_ID": "4f1XgkC1dSvvovZ9EU85pY8pwNdJRhqy7jjq188b1DjJ",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/synthetify_manager.json"
+        },
+        {
+            "PROJECT_NAME": "quarry_mergemine_mainnet",
+            "PROGRAM_ID": "QMMD16kjauP5knBwxNUJRZ1Z5o3deBuFrqVjBVmmqto",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/quarry_merge_mine.json"
+        },
+        {
+            "PROJECT_NAME": "quarry_mine_mainnet",
+            "PROGRAM_ID": "QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/quarry_mine.json"
+        },
+        {
+            "PROJECT_NAME": "quarry_mintwrapper_mainnet",
+            "PROGRAM_ID": "QMWoBmAyJLAsA1Lh9ugMTw2gciTihncciphzdNzdZYV",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/quarry_mint_wrapper.json"
+        },
+        {
+            "PROJECT_NAME": "quarry_redeemer_mainnet",
+            "PROGRAM_ID": "QRDxhMw1P2NEfiw5mYXG79bwfgHTdasY2xNP76XSea9",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/quarry_redeemer.json"
+        },
+        {
+            "PROJECT_NAME": "quarry_registry_mainnet",
+            "PROGRAM_ID": "QREGBnEj9Sa5uR91AV8u3FxThgP5ZCvdZUW2bHAkfNc",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/quarry_registry.json"
+        },
+        {
+            "PROJECT_NAME": "asol_mainnet",
+            "PROGRAM_ID": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/asol.json"
+        }
+    ]
+}
