@@ -54,7 +54,8 @@ def main():
         "indexTemplateFile": config['indexTemplateFile'],
         "typeDefTemplateFile": config['typeDefTemplateFile'],
         "configFile": config['configFile'],
-        "testMode": config["testMode"]
+        "testMode": config["testMode"],
+        "prdMode": config["prdMode"]
     }
     create_project_config('./src/config.json', content)
     build_and_start_server(project_name)

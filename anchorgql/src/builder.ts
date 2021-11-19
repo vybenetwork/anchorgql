@@ -4,7 +4,7 @@ import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { camelCase } from 'lodash';
 
 //** Edit this to change your server directory */
-const subDir = './src/channel_' + config.projectName;
+const subDir = config.prdMode ? './src/server' : './src/channel_' + config.projectName;
 
 function convertPascal(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
@@ -22,7 +22,6 @@ function getKeyForIdlObjectType(idlObjectType: IdlTypeVec | IdlTypeOption | IdlT
             key = '[String]';
         }
     } else if ('option' in idlObjectType) {
-        // TODO: check this with arun
         let castedOptionType = idlObjectType.option as IdlType;
         if (castedOptionType instanceof Object && 'defined' in castedOptionType) {
             let castedDefinedOptionType = castedOptionType.defined;
@@ -167,7 +166,6 @@ async function getTypes(): Promise<Operations> {
                     };
                 });
                 typeArr.push([convertPascal(projectName) + '_' + x.name, Object.assign({}, ...mainTypeFields)]);
-                //typeNames = idlConfig["types"].map((x) => x["name"]);
                 for (let y of x.type.variants) {
                     if ('fields' in y) {
                         let name = y.name;

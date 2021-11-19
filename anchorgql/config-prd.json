@@ -10,5 +10,6 @@
     "indexTemplateFile": "./src/template/index-template.ts",
     "typeDefTemplateFile": "./src/template/typedef-template.ts",
     "configFile": "./src/config.ts",
-    "testMode": false
+    "testMode": false,
+    "prdMode": true
 }
