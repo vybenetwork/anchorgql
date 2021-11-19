@@ -1,5 +1,6 @@
 import { ApolloServer } from 'apollo-server-express';
 import express from 'express';
+import { AddressInfo } from 'net';
 import { Provider, setProvider, web3, Program } from '@project-serum/anchor';
 import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
@@ -111,26 +112,23 @@ const resolvers = {
 
 async function startApolloServer() {
     eventParser ? parseEvents() : null;
-
-    const configurations = {
-        // Note: You may need sudo to run on port 443
-        production: { port: configVars.port, hostname: 'localhost' },
-        development: { port: 4000, hostname: 'localhost' },
-    };
-
-    const environment = process.env.NODE_ENV || 'production';
-    const config = configurations[environment];
-
     const server = new ApolloServer({ typeDefs, resolvers });
     await server.start();
 
     const app = express();
     server.applyMiddleware({ app });
 
-    app.listen(config.port, () => {
-        console.log('🚀 Server ready at', `http://${config.hostname}:${config.port}${server.graphqlPath}`);
-    });
+    let startedApp = app.listen(0, () => {
+        const castedApp = startedApp.address() as AddressInfo;
+        console.log(`🚀 Server ready at port ${castedApp?.port}`);
 
+        if (configVars.testMode) {
+            startedApp.close((err) => {
+                console.log('Test Mode is enabled so closing server');
+                process.exit(0);
+            });
+        }
+    });
     return { server, app };
 }
 

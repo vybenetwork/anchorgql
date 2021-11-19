@@ -1,1 +1,14 @@
-{"projectName": "asol_mainnet", "programId": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE", "anchorProviderURL": "https://api.mainnet-beta.solana.com", "idlPath": "./src/idls/asol.json", "anchorVersion": "0.14.0", "idl": null, "port": 51305, "packageJsonTemplateFile": "./src/template/package-template.json", "indexTemplateFile": "./src/template/index-template.ts", "typeDefTemplateFile": "./src/template/typedef-template.ts", "configFile": "./src/config.ts"}
+{
+    "projectName": "serum_registry_mainnet",
+    "programID": "GrAkKfEpTKQuVHG2Y97Y2FF4i7y7Q5AHLK94JBy7Y5yv",
+    "anchorProviderURL": "https://api.mainnet-beta.solana.com",
+    "idlPath": "./src/idls/registry.json",
+    "anchorVersion": "0.14.0",
+    "idl": null,
+    "port": 51305,
+    "packageJsonTemplateFile": "./src/template/package-template.json",
+    "indexTemplateFile": "./src/template/index-template.ts",
+    "typeDefTemplateFile": "./src/template/typedef-template.ts",
+    "configFile": "./src/config.ts",
+    "testMode": false
+}
