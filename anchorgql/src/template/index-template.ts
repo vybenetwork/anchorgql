@@ -120,7 +120,7 @@ async function startApolloServer() {
     const app = express();
     server.applyMiddleware({ app });
 
-    let startedApp = app.listen(0, () => {
+    let startedApp = app.listen(8080, () => {
         const castedApp = startedApp.address() as AddressInfo;
         console.log(`🚀 Server ready at port ${castedApp?.port}`);
 
