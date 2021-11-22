@@ -6,7 +6,6 @@ export const typeDefs = gql`
 ///--------------------///
 
     type Config {
-        provider: String
         programId: String
     }
 `;

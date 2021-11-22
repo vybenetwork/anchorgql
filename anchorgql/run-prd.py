@@ -23,7 +23,7 @@ def build_and_start_server(project_name):
             f'{bcolors.FAIL}ERROR: Failed to generate Apollo GraphQL project for project: {project_name}{bcolors.ENDC}')
     print(f'{bcolors.OKGREEN}DONE: Project creation successful for project: {project_name}{bcolors.ENDC}')
     new_process = subprocess.run(
-        "npm install && npm start", cwd="./src/channel_" + project_name, shell=True)
+        "npm install && npm start", cwd="./src/server", shell=True)
     if new_process.returncode != 0:
         print(
             f'{bcolors.FAIL}ERROR: Failed to start newly generated Apollo GraphQL server for project: {project_name}{bcolors.ENDC}')

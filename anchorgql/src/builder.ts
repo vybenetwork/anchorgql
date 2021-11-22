@@ -122,11 +122,11 @@ async function getRootType(): Promise<Operations> {
             };
         });
         accountNames.push({ config: 'Config' });
-        'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
+        // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
         return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
     } else {
         accountNames.push({ config: 'Config' });
-        'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
+        // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
         return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
     }
 }
