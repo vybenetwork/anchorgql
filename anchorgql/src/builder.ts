@@ -3,6 +3,9 @@ import { IdlField, IdlType, IdlTypeDef, IdlTypeDefined, IdlTypeVec, Operations, 
 import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { camelCase } from 'lodash';
 
+const PROGRAM_ID_TEXT_IN_TEMPLATE = '##PID##';
+const PROTOCOL_ID_TEXT_IN_TEMPLATE = '##PR##';
+
 //** Edit this to change your server directory */
 const subDir = config.prdMode ? './src/server' : './src/channel_' + config.projectName;
 
@@ -235,7 +238,8 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let codeString = split[0];
     codeString = codeString.concat(typeDefs);
     codeString = codeString.concat(split[1]);
-
+    codeString = codeString.replace(PROGRAM_ID_TEXT_IN_TEMPLATE, config.programID);
+    codeString = codeString.replace(PROTOCOL_ID_TEXT_IN_TEMPLATE, config.projectName);
     await writeFile(typeDefOutputFile, codeString);
 }
 
