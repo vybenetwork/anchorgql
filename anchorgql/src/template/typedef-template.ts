@@ -6,7 +6,9 @@ export const typeDefs = gql`
 ///--------------------///
 
     type Config {
-        "{programID: ##PID##, protocol: ##PR##}"
+        """
+        {programID: ##PID##, protocol: ##PR##}
+        """
         programId: String
     }
 `;
