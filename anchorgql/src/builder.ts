@@ -206,10 +206,19 @@ async function getTypes(): Promise<Operations> {
     return typeArr;
 }
 
-async function buildType(mapping: Operations): Promise<string> {
+async function buildType(mapping: Operations, isQueryString = false): Promise<string> {
     if (mapping.length !== 0) {
         let stringType = mapping.map((x) => {
-            return `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
+            let returnType = `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
+            if (isQueryString) {
+                const tokenized = returnType.split('{');
+                returnType =
+                    tokenized[0] +
+                    ' {' +
+                    `\n\t"{programID: ${config.programID}, protocol: ${config.projectName}}"` +
+                    tokenized[1];
+            }
+            return returnType;
         });
 
         return stringType.join('');
@@ -225,7 +234,7 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let account = await getAccountTypes();
     let types = await getTypes();
 
-    let queryStr = await buildType(query);
+    let queryStr = await buildType(query, true);
 
     let rootStr = await buildType(root);
     let accountRootStr = await buildType(accountRoot);
@@ -238,8 +247,6 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let codeString = split[0];
     codeString = codeString.concat(typeDefs);
     codeString = codeString.concat(split[1]);
-    codeString = codeString.replace(PROGRAM_ID_TEXT_IN_TEMPLATE, config.programID);
-    codeString = codeString.replace(PROTOCOL_ID_TEXT_IN_TEMPLATE, config.projectName);
     await writeFile(typeDefOutputFile, codeString);
 }
 
@@ -273,7 +280,6 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
         codeString = split[0].concat(split[2]);
         codeString = codeString.replace(/const eventParser = true/g, 'const eventParser = false');
     }
-
     await writeFile(indexOutputFile, codeString);
 }
 
