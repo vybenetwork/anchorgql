@@ -1,5 +1,8 @@
 {
     "projectName": "asol_mainnet",
+    "protocol": "asol",
+    "network": "mainnet",
+    "idl": {},
     "programID": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE",
     "anchorProviderURL": "https://api.mainnet-beta.solana.com",
     "idlPath": "./src/idls/idl.json",
