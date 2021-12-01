@@ -15,7 +15,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def build_and_start_server(project_name):
+def build_and_start_server(project_name, prd_mode):
     print(f'{bcolors.OKCYAN}INFO: Starting test for {project_name}')
     completed_process_result = subprocess.run(
         "npm install && npm start", shell=True)
@@ -24,8 +24,10 @@ def build_and_start_server(project_name):
             f'{bcolors.FAIL}ERROR: Failed to generate Apollo GraphQL project for project: {project_name}{bcolors.ENDC}')
         return False
     print(f'{bcolors.OKGREEN}DONE: Project creation successful for project: {project_name}{bcolors.ENDC}')
+    server_directory = "./src/channel_" + \
+        project_name if prd_mode else "./src/server"
     new_process = subprocess.run(
-        "npm install && npm start", cwd="./src/channel_" + project_name, shell=True)
+        "npm install && npm start", cwd=server_directory, shell=True)
     if new_process.returncode != 0:
         print(
             f'{bcolors.FAIL}ERROR: Failed to start newly generated Apollo GraphQL server for project: {project_name}{bcolors.ENDC}')
@@ -69,7 +71,7 @@ def main():
             "prdMode": config["prdMode"]
         }
         create_project_config('./src/config.json', content)
-        passed = build_and_start_server(project_name)
+        passed = build_and_start_server(project_name, config["prdMode"])
         results.append({
             "projectName": project_name,
             "passed": passed
