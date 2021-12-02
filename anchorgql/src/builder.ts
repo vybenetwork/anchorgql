@@ -1,10 +1,16 @@
 import * as config from './config.json';
-import { IdlField, IdlType, IdlTypeDef, IdlTypeDefined, IdlTypeVec, Operations, IdlTypeOption } from './types';
+import {
+    IdlField,
+    IdlType,
+    IdlTypeDef,
+    IdlTypeDefined,
+    IdlTypeVec,
+    Operations,
+    IdlTypeOption,
+    IdlTypeArray,
+} from './types';
 import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { camelCase } from 'lodash';
-
-const PROGRAM_ID_TEXT_IN_TEMPLATE = '##PID##';
-const PROTOCOL_ID_TEXT_IN_TEMPLATE = '##PR##';
 
 //** Edit this to change your server directory */
 const subDir = config.prdMode ? './src/server' : './src/channel_' + config.projectName;
@@ -13,31 +19,31 @@ function convertPascal(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function getKeyForIdlObjectType(idlObjectType: IdlTypeVec | IdlTypeOption | IdlTypeDefined): string {
+function getKeyOrGQLTypeForIDLType(idlType: IdlType): string {
+    if (idlType instanceof Object) {
+        return getKeyForIdlObjectType(idlType);
+    } else {
+        return getGqlTypeForIdlScalarType(idlType);
+    }
+}
+
+function getKeyForIdlObjectType(idlObjectType: IdlTypeVec | IdlTypeOption | IdlTypeDefined | IdlTypeArray): string {
     let projectName = config.projectName;
     let key: string;
     if ('vec' in idlObjectType) {
-        let castedVecType = idlObjectType.vec as IdlType;
-        if (castedVecType instanceof Object && 'defined' in castedVecType) {
-            let castedDefinedVecType = castedVecType.defined;
-            key = '[' + convertPascal(projectName) + '_' + castedDefinedVecType + ']';
-        } else {
-            key = '[String]';
-        }
+        let castedVecType = idlObjectType.vec;
+        return getKeyOrGQLTypeForIDLType(castedVecType);
     } else if ('option' in idlObjectType) {
-        let castedOptionType = idlObjectType.option as IdlType;
-        if (castedOptionType instanceof Object && 'defined' in castedOptionType) {
-            let castedDefinedOptionType = castedOptionType.defined;
-            key = '[' + convertPascal(projectName) + '_' + castedDefinedOptionType + ']';
-        } else {
-            key = '[String]';
-        }
+        let castedOptionType = idlObjectType.option;
+        return getKeyOrGQLTypeForIDLType(castedOptionType);
+    } else if ('array' in idlObjectType) {
+        let castedArrayType = idlObjectType.array[0];
+        return `[${getKeyOrGQLTypeForIDLType(castedArrayType)}]`;
     } else if ('defined' in idlObjectType) {
         key = convertPascal(projectName) + '_' + idlObjectType.defined;
     } else {
-        key = '[String]';
+        throw 'An unsupported object type was encountered in the IDL by the indexer.';
     }
-
     return key;
 }
 
@@ -54,8 +60,10 @@ function getGqlTypeForIdlScalarType(idlType: IdlType): string {
         return 'Int';
     } else if (bigIntTypes.includes(idlTypeStringified)) {
         return 'BigInt';
+    } else if (idlTypeStringified === 'bool') {
+        return 'Boolean';
     } else {
-        return '[String]';
+        throw 'An unsupported scalar type was encountered in the IDL by the indexer.';
     }
 }
 
@@ -144,17 +152,7 @@ async function getTypes(): Promise<Operations> {
             let values = [];
             if (x.type.kind === 'struct') {
                 values = x.type.fields.map((y: IdlField) => {
-                    let key: string;
-                    // if (y.type === "string") {
-                    //   key = "String";
-                    // } else
-                    if (y.type instanceof Object) {
-                        key = getKeyForIdlObjectType(y.type);
-                    } else {
-                        //TODO: add checks for other types here
-                        key = getGqlTypeForIdlScalarType(y.type);
-                        //key = "[String]";
-                    }
+                    let key = getKeyOrGQLTypeForIDLType(y.type);
                     return {
                         [y['name']]: key,
                     };
@@ -173,23 +171,14 @@ async function getTypes(): Promise<Operations> {
                     if ('fields' in y) {
                         let name = y.name;
                         let values = y.fields.map((z: IdlField | IdlType) => {
-                            //TODO: maybe a check needed here
                             if (z instanceof Object) {
                                 const castedIdlField = z as IdlField;
-                                if (castedIdlField.type instanceof Object) {
-                                    return {
-                                        [camelCase(castedIdlField.name)]: getKeyForIdlObjectType(castedIdlField.type),
-                                    };
-                                } else {
-                                    return {
-                                        [camelCase(castedIdlField.name)]: getGqlTypeForIdlScalarType(
-                                            castedIdlField.type,
-                                        ),
-                                    };
-                                }
+                                return {
+                                    [camelCase(castedIdlField.name)]: getKeyOrGQLTypeForIDLType(castedIdlField.type),
+                                };
                             } else {
                                 return {
-                                    [camelCase(z)]: '[String]',
+                                    [camelCase(z)]: getKeyOrGQLTypeForIDLType(z),
                                 };
                             }
                         });
