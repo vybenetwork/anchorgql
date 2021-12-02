@@ -58,7 +58,7 @@ def main():
         content = {
             "projectName": project_name,
             "protocol": channel["PROTOCOL"],
-            "network": channel["NETWORk"],
+            "network": channel["NETWORK"],
             "programID": program_id,
             "anchorProviderURL": anchor_provider_url,
             "idlPath": idl_path,
