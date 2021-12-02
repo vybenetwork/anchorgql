@@ -215,7 +215,7 @@ async function buildType(mapping: Operations, isQueryString = false): Promise<st
                 returnType =
                     tokenized[0] +
                     ' {' +
-                    `\n\t"{programID: ${config.programID}, protocol: ${config.protocol}, projectName: ${config.projectName}, network: ${config.network}}"` +
+                    `\n\t"""\n\t{programID: "${config.programID}", protocol: "${config.protocol}", projectName: "${config.projectName}", network: "${config.network}"}\n\t"""` +
                     tokenized[1];
             }
             return returnType;
