@@ -45,6 +45,8 @@ def main():
     content = {
         "projectName": project_name,
         "programID": config['programID'],
+        "protocol": config["protocol"],
+        "network": config["network"],
         "anchorProviderURL": config['anchorProviderURL'],
         "idlPath": config['idlPath'],
         "anchorVersion": config['anchorVersion'],

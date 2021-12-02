@@ -25,7 +25,7 @@ def build_and_start_server(project_name, prd_mode):
         return False
     print(f'{bcolors.OKGREEN}DONE: Project creation successful for project: {project_name}{bcolors.ENDC}')
     server_directory = "./src/channel_" + \
-        project_name if prd_mode else "./src/server"
+        project_name if not prd_mode else "./src/server"
     new_process = subprocess.run(
         "npm install && npm start", cwd=server_directory, shell=True)
     if new_process.returncode != 0:
@@ -57,6 +57,8 @@ def main():
         idl_path = channel['IDL_PATH']
         content = {
             "projectName": project_name,
+            "protocol": channel["PROTOCOL"],
+            "network": channel["NETWORk"],
             "programID": program_id,
             "anchorProviderURL": anchor_provider_url,
             "idlPath": idl_path,

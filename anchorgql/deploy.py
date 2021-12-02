@@ -17,12 +17,16 @@ async def acquire_idl_for_program(pid, project_name):
     provider = Provider(client, Wallet.local())
     # load the Serum Swap Program (not the Serum dex itself).
     program_id = PublicKey(pid)
-    idl = await Program.fetch_raw_idl(
-        program_id, provider
-    )
+    idl = None
+    try:
+        idl = await Program.fetch_raw_idl(
+            program_id, provider
+        )
+    except:
+        return False
     with open(f'./src/idls/{project_name}.json', 'w') as file:
         file.write(idl)
-    return
+    return True
 
 
 def addHasuraRemoteSchema(schema_url, project_name):
@@ -101,65 +105,53 @@ def buildGQLServer(data):
         return None
 
 
-def print_results(results):
-    print()
-    print("===================================================")
-    print("===================================================")
-    print("===================================================")
-    print()
-    print(f'{bcolors.OKBLUE}INFO: Test results:{bcolors.ENDC}')
-    for result in results:
-        if result['passed']:
-            print(
-                f'{bcolors.OKGREEN}{result["projectName"]}: Passed{bcolors.ENDC}')
-        else:
-            print(
-                f'{bcolors.FAIL}{result["projectName"]}: Failed{bcolors.ENDC}')
-    print()
-    print("===================================================")
-    print("=================== End of Run ====================")
-    print("===================================================")
-
-
 async def main():
     os.chdir('./anchorgql')
-    config = json.load(open('channels.json'))
-    channels_config = config['channels']
-    results = []
-    for channel in channels_config:
-        project_name = channel['PROJECT_NAME']
-        program_id = channel['PROGRAM_ID']
-        # acquire new idl if program id is not null. Otherwise, simply copy the existing idl as idl.json
-        if program_id is not None and program_id != "":
-            acquire_idl_for_program(program_id, project_name)
-        shutil.copyfile(
-            f'./src/idls/{project_name.replace("_mainnet", "").replace("_devnet", "")}.json', './src/idls/idl.json')
-        gqlData = {
-            "projectName": project_name,
-            "programID": program_id,
-            "anchorProviderURL": channel['ANCHOR_PROVIDER_URL'],
-            "idlPath": "./src/idls/idl.json",
-            "anchorVersion": "0.14.0",
-            "IDL": channel["IDL_PATH"],
-            "port": 51305,
-            "packageJsonTemplateFile": "./src/template/package-template.json",
-            "indexTemplateFile": "./src/template/index-template.ts",
-            "typeDefTemplateFile": "./src/template/typedef-template.ts",
-            "configFile": "./src/config.ts",
-            "testMode": True,
-            "prdMode": True
-        }
-        create_project_config('./src/config.json', gqlData)
-        result = build_and_start_server(project_name, config["prdMode"])
-        if result:
-            gqlURL = buildGQLServer(gqlData)
-            if gqlURL is not None:
-                result = addHasuraRemoteSchema(gqlURL, project_name)
-                results.append({
-                    "projectName": project_name,
-                    "passed": result
-                })
-    print_results(results)
+    config = json.load(open('config-prd.json'))
+    project_name = config['projectName']
+    program_id = config['programID']
+    # acquire new idl if program id is not null. Otherwise, simply copy the existing idl as idl.json
+
+    idl_found = False
+    if "idl" in config and config["idl"] is not None:
+        idl = json.dumps(config["idl"])
+        with open('./src/idls/idl.json', 'w') as file:
+            file.write(idl)
+        idl_found = True
+    elif program_id is not None and program_id != "":
+        idl_found = acquire_idl_for_program(program_id, project_name)
+    if not idl_found:
+        print(
+            f'{bcolors.FAIL}ERROR: No IDL File found for the program on the Solana blockchain and none was passed. If non is present on the blockchain, pass one using the idl config parameter.{bcolors.ENDC}')
+        quit()
+    shutil.copyfile(
+        f'./src/idls/{project_name.replace("_mainnet", "").replace("_devnet", "")}.json', './src/idls/idl.json')
+    gqlData = {
+        "projectName": project_name,
+        "programID": program_id,
+        "protocol": config["protocol"],
+        "network": config["network"],
+        "anchorProviderURL": config['anchorProviderURL'],
+        "idlPath": "./src/idls/idl.json",
+        "anchorVersion": "0.14.0",
+        "idl": config['idl'],
+        "port": 51305,
+        "packageJsonTemplateFile": "./src/template/package-template.json",
+        "indexTemplateFile": "./src/template/index-template.ts",
+        "typeDefTemplateFile": "./src/template/typedef-template.ts",
+        "configFile": "./src/config.ts",
+        "testMode": True,
+        "prdMode": True
+    }
+    create_project_config('./src/config.json', gqlData)
+    result = build_and_start_server(project_name, config["prdMode"])
+    if result:
+        gqlURL = buildGQLServer(gqlData)
+        if gqlURL is not None:
+            result = addHasuraRemoteSchema(gqlURL, project_name)
+    # rewrite the config with testmode disabled
+    gqlData["testMode"] = False
+    create_project_config('./src/config.json', gqlData)
 
 
 if __name__ == '__main__':
