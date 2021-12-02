@@ -82,6 +82,8 @@ def buildGQLServer(data):
 
         # 3. Now submit a build for the image. This will build the docker image and push it to gcr.
         #    Also, deploy it on GCP Cloud Run and start the service.
+        # Doesn't work in Windows unless using WSL. This should be changed to use the GCP Python SDK
+        # instead so as to make this cross platform.
         new_process = subprocess.run(
             "bash deploy.sh", stdout=subprocess.PIPE, cwd="./src/server", shell=True)
         if new_process.returncode != 0:
@@ -145,7 +147,9 @@ async def main():
     }
     create_project_config('./src/config.json', gqlData)
     result = build_and_start_server(project_name, config["prdMode"])
-    if result:
+    # on windows, this fails as the syntax to set env variables is different from that in UNIX
+    # if result:
+    if True:
         gqlURL = buildGQLServer(gqlData)
         if gqlURL is not None:
             result = addHasuraRemoteSchema(gqlURL, project_name)
