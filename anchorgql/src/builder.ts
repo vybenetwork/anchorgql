@@ -13,7 +13,7 @@ import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { camelCase } from 'lodash';
 
 //** Edit this to change your server directory */
-const subDir = config.prdMode ? './src/server' : './src/channel_' + config.projectName;
+const subDir = config.prdMode ? './src/server' : './src/program_' + config.projectName;
 
 function convertPascal(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
@@ -118,7 +118,7 @@ async function getAccountRootTypes(): Promise<Operations> {
 
 async function getQueryType(): Promise<Operations> {
     const projectName = config.projectName;
-    let subgraph = 'channel_' + projectName;
+    let subgraph = 'program_' + projectName;
     return [['Query', { [subgraph]: convertPascal(projectName) }]];
 }
 
@@ -247,7 +247,7 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
     var split = data.split('///----------ACCOUNT_RESOLVERS----------///');
     let codeString = split[0]
         .replace(/__URL__/g, url)
-        .replace(/__PROJECTNAME__/g, 'channel_' + projectName)
+        .replace(/__PROJECTNAME__/g, 'program_' + projectName)
         .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1));
     if ('accounts' in idlConfig) {
         let accountNames = idlConfig['accounts'].map((x) => x['name']);
