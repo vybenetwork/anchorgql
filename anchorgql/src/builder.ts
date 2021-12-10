@@ -32,7 +32,7 @@ function getKeyForIdlObjectType(idlObjectType: IdlTypeVec | IdlTypeOption | IdlT
     let key: string;
     if ('vec' in idlObjectType) {
         let castedVecType = idlObjectType.vec;
-        return getKeyOrGQLTypeForIDLType(castedVecType);
+        return `[${getKeyOrGQLTypeForIDLType(castedVecType)}]`;
     } else if ('option' in idlObjectType) {
         let castedOptionType = idlObjectType.option;
         return getKeyOrGQLTypeForIDLType(castedOptionType);
