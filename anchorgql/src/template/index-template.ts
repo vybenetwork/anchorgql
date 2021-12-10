@@ -110,6 +110,9 @@ const resolvers = {
             };
         },
     },
+    ///----------ENUM_FIELD_RESOLVERS----------///
+
+    ///----------ENUM_FIELD_RESOLVERS----------///
 };
 
 async function startApolloServer() {

@@ -8,6 +8,9 @@ import {
     Operations,
     IdlTypeOption,
     IdlTypeArray,
+    OperationType,
+    OperationName,
+    OpertationReturnType,
 } from './types';
 import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { camelCase } from 'lodash';
@@ -244,16 +247,14 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let enumTypes = await getTypesForEnums();
 
     let queryStr = await buildType(query, true);
-
     let rootStr = await buildType(root);
     let accountRootStr = await buildType(accountRoot);
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes);
-
     let typesStr = structTypesStr + enumTypesStr;
-
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
+
     let data = await readFile(typeDefTemplateFile, 'utf8');
     const split = data.split('///--------------------///');
     let codeString = split[0];
@@ -295,6 +296,41 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
     await writeFile(indexOutputFile, codeString);
 }
 
+function generateFieldResolverForEnum(
+    enumData: [type: OperationType, options: Record<OperationName, OpertationReturnType>],
+): string {
+    return `${enumData[0]}: {
+        name: async(parent, args) => {
+            return Object.keys(parent)[0]
+        },
+        data: async(parent, args) => {
+            
+        }
+    }
+    `;
+}
+
+async function buildEnumFieldResolvers(indexOutputFile: string): Promise<void> {
+    const enumFieldResolverString = '///----------ENUM_FIELD_RESOLVERS----------///';
+    let enumTypes = await getTypesForEnums();
+    let data = await readFile(indexOutputFile, 'utf8');
+    let split = data.split(enumFieldResolverString);
+    let fieldResolverString = '';
+    enumTypes.map(async (x) => {
+        fieldResolverString += generateFieldResolverForEnum(x);
+    });
+    const updatedResolverFileData =
+        split[0] +
+        enumFieldResolverString +
+        '\n' +
+        '\t' +
+        fieldResolverString +
+        enumFieldResolverString +
+        split[1] +
+        split[2];
+    await writeFile(indexOutputFile, updatedResolverFileData);
+}
+
 async function makeDirs() {
     await mkdir(subDir, { recursive: true });
     await mkdir(subDir + '/src/idls', { recursive: true });
@@ -319,6 +355,7 @@ async function main() {
     await copyFiles();
     await buildTypeDef(config.typeDefTemplateFile, typeDefOutputFile);
     await buildResolvers(config.indexTemplateFile, indexOutputFile);
+    await buildEnumFieldResolvers(indexOutputFile);
     console.log('Successfully generated the new graphql project');
 }
 
