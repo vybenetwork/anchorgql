@@ -19,6 +19,10 @@ function convertPascal(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+// function getTypesForEnum(name: string, values: string[]): string {
+
+// }
+
 function getKeyOrGQLTypeForIDLType(idlType: IdlType): string {
     if (idlType instanceof Object) {
         return getKeyForIdlObjectType(idlType);
@@ -142,54 +146,69 @@ async function getRootType(): Promise<Operations> {
     }
 }
 
-async function getTypes(): Promise<Operations> {
+async function getTypesForStructs(): Promise<Operations> {
     let projectName = config.projectName;
     let typeArr: Operations = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
-        for (let x of idlTypes) {
+        let idlStructTypes = idlTypes.filter((x) => x.type.kind === 'struct');
+        for (let x of idlStructTypes) {
             let name: string = convertPascal(projectName) + '_' + x.name;
             let values = [];
-            if (x.type.kind === 'struct') {
-                values = x.type.fields.map((y: IdlField) => {
-                    let key = getKeyOrGQLTypeForIDLType(y.type);
-                    return {
-                        [y['name']]: key,
-                    };
-                });
-                if (values.length > 0) {
-                    typeArr.push([name, Object.assign({}, ...values)]);
-                }
-            } else if (x.type.kind === 'enum') {
-                let mainTypeFields = x.type.variants.map((x) => {
-                    return {
-                        [camelCase(x.name)]: convertPascal(projectName) + '_' + x.name,
-                    };
-                });
-                typeArr.push([convertPascal(projectName) + '_' + x.name, Object.assign({}, ...mainTypeFields)]);
-                for (let y of x.type.variants) {
-                    if ('fields' in y) {
-                        let name = y.name;
-                        let values = y.fields.map((z: IdlField | IdlType) => {
-                            if (z instanceof Object) {
-                                const castedIdlField = z as IdlField;
-                                return {
-                                    [camelCase(castedIdlField.name)]: getKeyOrGQLTypeForIDLType(castedIdlField.type),
-                                };
-                            } else {
-                                return {
-                                    [camelCase(z)]: getKeyOrGQLTypeForIDLType(z),
-                                };
-                            }
-                        });
-                        values.push({ ts: 'String' });
-                        typeArr.push([convertPascal(projectName) + '_' + name, Object.assign({}, ...values)]);
-                    } else {
-                        //TODO: apply a fix here
-                        typeArr.push([convertPascal(projectName) + '_' + y['name'], { _: 'Boolean' }]);
-                    }
-                }
+            values = x.type.fields.map((y: IdlField) => {
+                let key = getKeyOrGQLTypeForIDLType(y.type);
+                return {
+                    [y['name']]: key,
+                };
+            });
+            if (values.length > 0) {
+                typeArr.push([name, Object.assign({}, ...values)]);
             }
+        }
+    }
+    return typeArr;
+}
+
+async function getTypesForEnums(): Promise<Operations> {
+    let projectName = config.projectName;
+    let typeArr: Operations = [];
+    if (idlConfig.hasOwnProperty('types')) {
+        let idlTypes: IdlTypeDef[] = idlConfig.types;
+        let idlEnumTypes = idlTypes.filter((x) => x.type.kind === 'enum');
+        for (let x of idlEnumTypes) {
+            let enumVariants = x.type.variants;
+            let variantsWithFields = [];
+            // first generate types for all the variants with fields in them
+            enumVariants.map((e) => {
+                if ('fields' in e) {
+                    let name = e.name;
+                    let values = e.fields.map((z: IdlField | IdlType) => {
+                        if (z instanceof Object) {
+                            const castedIdlField = z as IdlField;
+                            return {
+                                [camelCase(castedIdlField.name)]: getKeyOrGQLTypeForIDLType(castedIdlField.type),
+                            };
+                        } else {
+                            return {
+                                [camelCase(z)]: getKeyOrGQLTypeForIDLType(z),
+                            };
+                        }
+                    });
+                    values.push({ ts: 'String' });
+                    const typeName = convertPascal(projectName) + '_' + name;
+                    typeArr.push([typeName, Object.assign({}, ...values)]);
+                    variantsWithFields.push(typeName);
+                }
+            });
+
+            // then generate one type for the main enum
+            typeArr.push([
+                convertPascal(projectName) + '_' + x.name,
+                {
+                    name: 'String',
+                    data: `Void ${variantsWithFields.length > 0 ? '|' + variantsWithFields.join(' | ') : ''}`,
+                },
+            ]);
         }
     }
     return typeArr;
@@ -221,14 +240,18 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let root = await getRootType();
     let accountRoot = await getAccountRootTypes();
     let account = await getAccountTypes();
-    let types = await getTypes();
+    let structTypes = await getTypesForStructs();
+    let enumTypes = await getTypesForEnums();
 
     let queryStr = await buildType(query, true);
 
     let rootStr = await buildType(root);
     let accountRootStr = await buildType(accountRoot);
     let accountStr = await buildType(account);
-    let typesStr = await buildType(types);
+    let structTypesStr = await buildType(structTypes);
+    let enumTypesStr = await buildType(enumTypes);
+
+    let typesStr = structTypesStr + enumTypesStr;
 
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
     let data = await readFile(typeDefTemplateFile, 'utf8');
