@@ -22,9 +22,15 @@ function convertPascal(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-// function getTypesForEnum(name: string, values: string[]): string {
-
-// }
+function isSpecialEnum(
+    operation: [type: OperationType, options: Record<OperationName, OpertationReturnType>],
+): boolean {
+    return (
+        Object.keys(operation).length === 2 &&
+        Object.keys(operation[1]).includes('name') &&
+        Object.keys(operation[1]).includes('data')
+    );
+}
 
 function getKeyOrGQLTypeForIDLType(idlType: IdlType): string {
     if (idlType instanceof Object) {
@@ -197,19 +203,19 @@ async function getTypesForEnums(): Promise<Operations> {
                             };
                         }
                     });
-                    values.push({ ts: 'String' });
                     const typeName = convertPascal(projectName) + '_' + name;
                     typeArr.push([typeName, Object.assign({}, ...values)]);
                     variantsWithFields.push(typeName);
                 }
             });
 
-            // then generate one type for the main enum
+            // The implementation of buildType for enums depends on this. Edit with Caution
+            // TODO: Refactor this later
             typeArr.push([
                 convertPascal(projectName) + '_' + x.name,
                 {
                     name: 'String',
-                    data: `Void ${variantsWithFields.length > 0 ? '|' + variantsWithFields.join(' | ') : ''}`,
+                    data: `${variantsWithFields.length > 0 ? variantsWithFields.join(' | ') : 'Void'}`,
                 },
             ]);
         }
@@ -217,17 +223,34 @@ async function getTypesForEnums(): Promise<Operations> {
     return typeArr;
 }
 
-async function buildType(mapping: Operations, isQueryString = false): Promise<string> {
+async function buildType(
+    mapping: Operations,
+    options: { isQueryString?: boolean; isEnumString?: boolean } = { isQueryString: false, isEnumString: false },
+): Promise<string> {
     if (mapping.length !== 0) {
         let stringType = mapping.map((x) => {
             let returnType = `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
-            if (isQueryString) {
+            if (options.isQueryString) {
                 const tokenized = returnType.split('{');
                 returnType =
                     tokenized[0] +
                     ' {' +
                     `\n\t"""\n\t{"programID": "${config.programID}", "protocol": "${config.protocol}", "projectName": "${config.projectName}", "network": "${config.network}"}\n\t"""` +
                     tokenized[1];
+            }
+
+            // generate the additional union type for special enum type
+            if (options.isEnumString) {
+                if (isSpecialEnum(x)) {
+                    let unionType = x[1].data;
+                    const unionTypeSplit = unionType.split('|');
+                    if (unionTypeSplit.length > 1) {
+                        const unionTypeString = `union ${x[0]}_data = ${unionType} \n\n`;
+                        let returnTypeSplit = returnType.split('data:');
+                        returnType = unionTypeString + returnTypeSplit[0] + `data: ${x[0]}_data \n}  \n`;
+                    }
+                    //returnType += `\n\n`;
+                }
             }
             return returnType;
         });
@@ -246,12 +269,12 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let structTypes = await getTypesForStructs();
     let enumTypes = await getTypesForEnums();
 
-    let queryStr = await buildType(query, true);
+    let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
     let accountRootStr = await buildType(accountRoot);
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
-    let enumTypesStr = await buildType(enumTypes);
+    let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
     let typesStr = structTypesStr + enumTypesStr;
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
 
@@ -294,6 +317,8 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
         codeString = codeString.replace(/const eventParser = true/g, 'const eventParser = false');
     }
     await writeFile(indexOutputFile, codeString);
+
+    await buildEnumFieldResolvers(indexOutputFile);
 }
 
 function generateFieldResolverForEnum(
@@ -304,15 +329,19 @@ function generateFieldResolverForEnum(
             return Object.keys(parent)[0]
         },
         data: async(parent, args) => {
-            
+            return parent[Object.keys(parent)[0]]
         }
-    }
+    },
     `;
 }
 
 async function buildEnumFieldResolvers(indexOutputFile: string): Promise<void> {
     const enumFieldResolverString = '///----------ENUM_FIELD_RESOLVERS----------///';
     let enumTypes = await getTypesForEnums();
+    // Filter to get only the main enum types and not the types for fields. Can cause a bug if a the type of
+    // the field has data and name as keys and the type of data starts with Void. So far, in schema, we only
+    // allow Void's here so this shouldn't happen but will have to be careful here
+    enumTypes = enumTypes.filter((t) => isSpecialEnum(t));
     let data = await readFile(indexOutputFile, 'utf8');
     let split = data.split(enumFieldResolverString);
     let fieldResolverString = '';
@@ -355,7 +384,6 @@ async function main() {
     await copyFiles();
     await buildTypeDef(config.typeDefTemplateFile, typeDefOutputFile);
     await buildResolvers(config.indexTemplateFile, indexOutputFile);
-    await buildEnumFieldResolvers(indexOutputFile);
     console.log('Successfully generated the new graphql project');
 }
 
