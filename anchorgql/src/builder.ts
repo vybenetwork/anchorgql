@@ -340,7 +340,7 @@ function generateFieldResolverForEnum(
             return Object.keys(parent)[0]
         },
         data: async(parent) => {
-            return Object.keys(parent).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this name'}
+            return Object.keys(parent[Object.keys(parent)[0]]).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this variant'}
         }
     },
     `;
@@ -359,7 +359,7 @@ function generateFieldResolverForEnum(
                 )}) {\n\t\t\t\treturn "${dataTypeName}"\n\t\t\t}`;
             }
         });
-        unionTypeResolver += `\n\t\treturn "${projectName}_Data_Fields_Info";\n\t}\n},`;
+        unionTypeResolver += `\n\t\treturn "${projectName}_Data_Fields_Info";\n\t}\n},\n`;
     }
 
     return fieldResolver + unionTypeResolver;
