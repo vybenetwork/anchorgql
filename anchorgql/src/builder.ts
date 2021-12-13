@@ -210,12 +210,18 @@ async function getTypesForEnums(): Promise<Operations> {
             });
 
             // The implementation of buildType for enums depends on this. Edit with Caution
-            // TODO: Refactor this later
+
+            const typeNameForDataFieldInfoType = convertPascal(projectName) + '_' + 'Data_Fields_Info';
+
             typeArr.push([
                 convertPascal(projectName) + '_' + x.name,
                 {
                     name: 'String',
-                    data: `${variantsWithFields.length > 0 ? variantsWithFields.join(' | ') : 'Void'}`,
+                    data: `${
+                        variantsWithFields.length > 0
+                            ? variantsWithFields.concat([typeNameForDataFieldInfoType]).join(' | ')
+                            : typeNameForDataFieldInfoType
+                    }`,
                 },
             ]);
         }
@@ -245,11 +251,10 @@ async function buildType(
                     let unionType = x[1].data;
                     const unionTypeSplit = unionType.split('|');
                     if (unionTypeSplit.length > 1) {
-                        const unionTypeString = `union ${x[0]}_data = ${unionType} \n\n`;
+                        const unionTypeString = `union ${x[0]}_Data = ${unionType} \n\n`;
                         let returnTypeSplit = returnType.split('data:');
-                        returnType = unionTypeString + returnTypeSplit[0] + `data: ${x[0]}_data \n}  \n`;
+                        returnType = unionTypeString + returnTypeSplit[0] + `data: ${x[0]}_Data \n}  \n`;
                     }
-                    //returnType += `\n\n`;
                 }
             }
             return returnType;
@@ -275,7 +280,11 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
-    let typesStr = structTypesStr + enumTypesStr;
+    let addionalDataInfoType = `\n\ntype ${
+        convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
+    } {\n\tmessage: String\n},`;
+    let typesStr = structTypesStr + enumTypesStr + addionalDataInfoType;
+
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
 
     let data = await readFile(typeDefTemplateFile, 'utf8');
@@ -323,30 +332,52 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
 
 function generateFieldResolverForEnum(
     enumData: [type: OperationType, options: Record<OperationName, OpertationReturnType>],
+    enumTypes: Operations,
 ): string {
-    return `${enumData[0]}: {
-        name: async(parent, args) => {
+    const projectName = convertPascal(config.projectName);
+    const fieldResolver = `${enumData[0]}: {
+        name: async(parent) => {
             return Object.keys(parent)[0]
         },
-        data: async(parent, args) => {
-            return parent[Object.keys(parent)[0]]
+        data: async(parent) => {
+            return Object.keys(parent).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this name'}
         }
     },
     `;
+
+    let unionTypeResolver = '';
+    let dataTypes = enumData[1]['data'].split('|');
+    if (dataTypes.length > 1) {
+        unionTypeResolver += `${enumData[0]}_Data: {\n\t\t__resolveType: (obj) => {`;
+        dataTypes.forEach((dataTypeName) => {
+            dataTypeName = dataTypeName.trim();
+            if (dataTypeName !== projectName + '_' + 'Data_Fields_Info') {
+                let additionalDataFieldTypes = Object.keys(enumTypes.filter((e) => e[0] === dataTypeName)[0][1]);
+                let propertiesWithObj = additionalDataFieldTypes.map((a) => `obj.${a}`);
+                unionTypeResolver += `\n\t\t\tif (${propertiesWithObj.join(
+                    ' && ',
+                )}) {\n\t\t\t\treturn "${dataTypeName}"\n\t\t\t}`;
+            }
+        });
+        unionTypeResolver += `\n\t\treturn "${projectName}_Data_Fields_Info";\n\t}\n},`;
+    }
+
+    return fieldResolver + unionTypeResolver;
 }
 
 async function buildEnumFieldResolvers(indexOutputFile: string): Promise<void> {
     const enumFieldResolverString = '///----------ENUM_FIELD_RESOLVERS----------///';
-    let enumTypes = await getTypesForEnums();
+    let allEnumTypes = await getTypesForEnums();
     // Filter to get only the main enum types and not the types for fields. Can cause a bug if a the type of
     // the field has data and name as keys and the type of data starts with Void. So far, in schema, we only
     // allow Void's here so this shouldn't happen but will have to be careful here
-    enumTypes = enumTypes.filter((t) => isSpecialEnum(t));
+    const specialEnumTypes = allEnumTypes.filter((t) => isSpecialEnum(t));
     let data = await readFile(indexOutputFile, 'utf8');
     let split = data.split(enumFieldResolverString);
     let fieldResolverString = '';
-    enumTypes.map(async (x) => {
-        fieldResolverString += generateFieldResolverForEnum(x);
+
+    specialEnumTypes.map(async (x) => {
+        fieldResolverString += generateFieldResolverForEnum(x, allEnumTypes);
     });
     const updatedResolverFileData =
         split[0] +
