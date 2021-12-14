@@ -62,8 +62,8 @@ function getKeyForIdlObjectType(idlObjectType: IdlTypeVec | IdlTypeOption | IdlT
 
 function getGqlTypeForIdlScalarType(idlType: IdlType): string {
     const stringTypes = ['bytes', 'string', 'publicKey'];
-    const intTypes = ['u8', 'i8', 'u16', 'i16', 'u32', 'i32'];
-    const bigIntTypes = ['u64', 'i64', 'u128', 'i128'];
+    const intTypes = ['u8', 'i8', 'u16', 'i16', 'i32'];
+    const bigIntTypes = ['u32', 'u64', 'i64', 'u128', 'i128'];
 
     const idlTypeStringified = idlType as string;
 
