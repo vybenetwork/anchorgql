@@ -144,6 +144,14 @@
             "PROGRAM_ID": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE",
             "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
             "IDL_PATH": "./src/idls/asol.json"
+        },
+        {
+            "PROJECT_NAME": "zeta_devnet",
+            "PROTOCOL": "zeta",
+            "NETWORK": "devnet",
+            "PROGRAM_ID": "98utEQgwfbkvTKVS1seNQmFYFviaLsXAXqaWHr1V8JXF",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/zeta.json"
         }
     ]
 }
