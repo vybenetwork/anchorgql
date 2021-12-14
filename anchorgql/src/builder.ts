@@ -261,7 +261,7 @@ async function buildType(
 
                     const enumTypes = x[1].name.split(',');
                     const joinedEnumTypes = enumTypes.join('');
-                    let nameForEnumVariantNames = convertPascal(projectName) + '_' + 'Names';
+                    let nameForEnumVariantNames = `${x[0]}_Names`;
                     returnType = returnType.replace(joinedEnumTypes, nameForEnumVariantNames);
 
                     let enumString = `\nenum ${nameForEnumVariantNames} {\n\t ${enumTypes.join('\n\t')} \n} \n`;
