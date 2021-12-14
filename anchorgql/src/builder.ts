@@ -188,7 +188,9 @@ async function getTypesForEnums(): Promise<Operations> {
             let enumVariants = x.type.variants;
             let variantsWithFields = [];
             // first generate types for all the variants with fields in them
+            let enumVariantNames = [];
             enumVariants.map((e) => {
+                enumVariantNames.push(e.name);
                 if ('fields' in e) {
                     let name = e.name;
                     let values = e.fields.map((z: IdlField | IdlType) => {
@@ -216,7 +218,7 @@ async function getTypesForEnums(): Promise<Operations> {
             typeArr.push([
                 convertPascal(projectName) + '_' + x.name,
                 {
-                    name: 'String',
+                    name: enumVariantNames.map((n) => n.toLowerCase()).toString(),
                     data: `${
                         variantsWithFields.length > 0
                             ? variantsWithFields.concat([typeNameForDataFieldInfoType]).join(' | ')
@@ -234,6 +236,7 @@ async function buildType(
     options: { isQueryString?: boolean; isEnumString?: boolean } = { isQueryString: false, isEnumString: false },
 ): Promise<string> {
     if (mapping.length !== 0) {
+        let projectName = config.projectName;
         let stringType = mapping.map((x) => {
             let returnType = `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
             if (options.isQueryString) {
@@ -251,10 +254,18 @@ async function buildType(
                     let unionType = x[1].data;
                     const unionTypeSplit = unionType.split('|');
                     if (unionTypeSplit.length > 1) {
-                        const unionTypeString = `union ${x[0]}_Data = ${unionType} \n\n`;
+                        const unionTypeString = `\nunion ${x[0]}_Data = ${unionType} \n\n`;
                         let returnTypeSplit = returnType.split('data:');
                         returnType = unionTypeString + returnTypeSplit[0] + `data: ${x[0]}_Data \n}  \n`;
                     }
+
+                    const enumTypes = x[1].name.split(',');
+                    const joinedEnumTypes = enumTypes.join('');
+                    let nameForEnumVariantNames = convertPascal(projectName) + '_' + 'Names';
+                    returnType = returnType.replace(joinedEnumTypes, nameForEnumVariantNames);
+
+                    let enumString = `\nenum ${nameForEnumVariantNames} {\n\t ${enumTypes.join('\n\t')} \n} \n`;
+                    returnType += enumString;
                 }
             }
             return returnType;
@@ -337,7 +348,7 @@ function generateFieldResolverForEnum(
     const projectName = convertPascal(config.projectName);
     const fieldResolver = `${enumData[0]}: {
         name: async(parent) => {
-            return Object.keys(parent)[0]
+            return Object.keys(parent)[0].toLowerCase()
         },
         data: async(parent) => {
             return Object.keys(parent[Object.keys(parent)[0]]).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this variant'}
