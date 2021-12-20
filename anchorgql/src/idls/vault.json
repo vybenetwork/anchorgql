@@ -1,0 +1,924 @@
+{
+    "version": "0.0.0",
+    "name": "vault",
+    "instructions": [
+        {
+            "name": "fractionalize",
+            "accounts": [
+                {
+                    "name": "initializerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "fractionsMintAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "fractionsTempAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "voteAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "buyoutAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "initializerNftAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "numShares",
+                    "type": "u64"
+                },
+                {
+                    "name": "reservePrice",
+                    "type": "u64"
+                },
+                {
+                    "name": "verifyHash",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "fuse",
+            "accounts": [
+                {
+                    "name": "initializerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "fractionsMintAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "fractionsTempAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "lockedNftAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "startAuction",
+            "accounts": [
+                {
+                    "name": "initializerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "voteAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "buyoutAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "placeBid",
+            "accounts": [
+                {
+                    "name": "bidderAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "previousBidderAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "bid",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "endAuction",
+            "accounts": [
+                {
+                    "name": "initializerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "winningBidderAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultNftAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "closeVault",
+            "accounts": [
+                {
+                    "name": "initializerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "claimBid",
+            "accounts": [
+                {
+                    "name": "bidderAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "vaultNftAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "clock",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "buyout",
+            "accounts": [
+                {
+                    "name": "buyerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "voteAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "buyoutAccount",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "lockedNftAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "previousBidderAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "buyout",
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "redeem",
+            "accounts": [
+                {
+                    "name": "initializerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "fractionsMintAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "redeemerFractionsAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "claimAssets",
+            "accounts": [
+                {
+                    "name": "buyerAccount",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "tokenAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mintPubkey",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "vaultAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "vaultBump",
+                    "type": "u8"
+                },
+                {
+                    "name": "amount",
+                    "type": "u64"
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "VaultAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "nftMintAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "fractionsMintAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "vaultNftAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "vaultNftMintPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "initializerAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "winnerPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "buyoutPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "votePubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "issuedShares",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "outstandingShares",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "creationTime",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "reservePrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "instantBuyoutPrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "salePrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "isAuctionEnabled",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "isSold",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "isClaimed",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "isFused",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "verifyHash",
+                        "type": {
+                            "array": ["u8", 64]
+                        }
+                    },
+                    {
+                        "name": "version",
+                        "type": "u16"
+                    },
+                    {
+                        "name": "auction",
+                        "type": {
+                            "defined": "AuctionAccount"
+                        }
+                    },
+                    {
+                        "name": "reserve",
+                        "type": {
+                            "array": ["u8", 512]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "MultiAssetVaultAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "nftMintAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "vaultNftAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "vaultNftMintPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "initializerAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "winnerPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "buyoutPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "votePubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "issuedShares",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "outstandingShares",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "creationTime",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "reservePrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "instantBuyoutPrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "salePrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "isAuctionEnabled",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "isSold",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "isClaimed",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "isFused",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "verifyHash",
+                        "type": {
+                            "array": ["u8", 64]
+                        }
+                    },
+                    {
+                        "name": "version",
+                        "type": "u16"
+                    },
+                    {
+                        "name": "reserve",
+                        "type": {
+                            "array": ["u8", 512]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "PoolAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "vaultAccounts",
+                        "type": {
+                            "array": ["publicKey", 2048]
+                        }
+                    },
+                    {
+                        "name": "buyoutValues",
+                        "type": {
+                            "array": ["u64", 2048]
+                        }
+                    },
+                    {
+                        "name": "issuedShares",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "initializerAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "fractionsMintAccountPubkey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "creationTime",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "auction",
+                        "type": {
+                            "defined": "AuctionAccount"
+                        }
+                    },
+                    {
+                        "name": "version",
+                        "type": "u16"
+                    },
+                    {
+                        "name": "closed",
+                        "type": "bool"
+                    }
+                ]
+            }
+        }
+    ],
+    "types": [
+        {
+            "name": "AuctionAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "lastBid",
+                        "type": {
+                            "defined": "BidAccount"
+                        }
+                    },
+                    {
+                        "name": "auctionStartTime",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "auctionEndTime",
+                        "type": "i64"
+                    },
+                    {
+                        "name": "auctionIsDone",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "BidAccount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "bidKey",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "bidPrice",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "bidTime",
+                        "type": "i64"
+                    }
+                ]
+            }
+        }
+    ],
+    "errors": [
+        {
+            "code": 300,
+            "name": "InvalidBuyoutPrice",
+            "msg": "Buyout price must be a multiple of num shares."
+        },
+        {
+            "code": 301,
+            "name": "WrongHash",
+            "msg": "Wrong size hash"
+        },
+        {
+            "code": 302,
+            "name": "ReservePriceLimitReached",
+            "msg": "Buyout price must be less than 9223372036 SOL"
+        },
+        {
+            "code": 303,
+            "name": "TimeOverflow",
+            "msg": "Time has overflowed"
+        },
+        {
+            "code": 304,
+            "name": "IncorrectFractionsMint",
+            "msg": "Incorrect fractions mint account given in."
+        },
+        {
+            "code": 305,
+            "name": "IncorrectLockedNFTAccount",
+            "msg": "Incorrect locked NFT account given in."
+        },
+        {
+            "code": 306,
+            "name": "FuseInsufficientShares",
+            "msg": "Not enough shares held to fuse."
+        },
+        {
+            "code": 307,
+            "name": "UnavailableForBuyout",
+            "msg": "NFT no longer available for buyout."
+        },
+        {
+            "code": 308,
+            "name": "TooPoor",
+            "msg": "Need more lamports."
+        },
+        {
+            "code": 309,
+            "name": "AmountOverflow",
+            "msg": "Lamport overflow on transfer."
+        },
+        {
+            "code": 310,
+            "name": "AmountUnderflow",
+            "msg": "Lamport underflow on transfer."
+        },
+        {
+            "code": 311,
+            "name": "FeedNotInitialized",
+            "msg": "Switchboard feed not initialized"
+        },
+        {
+            "code": 312,
+            "name": "NotSold",
+            "msg": "Nothing to redeem, NFT not sold."
+        },
+        {
+            "code": 313,
+            "name": "Sold",
+            "msg": "Already Sold"
+        },
+        {
+            "code": 314,
+            "name": "AuctionNotEnabled",
+            "msg": "Auction not enabled, must vote for auction"
+        },
+        {
+            "code": 315,
+            "name": "AuctionNotEnded",
+            "msg": "Auction not ended yet"
+        },
+        {
+            "code": 316,
+            "name": "AuctionComplete",
+            "msg": "Auction completed and closed"
+        },
+        {
+            "code": 317,
+            "name": "UnauthorizedReceiver",
+            "msg": "User not authorized to recieve previous bid"
+        },
+        {
+            "code": 318,
+            "name": "UnauthorizedClaimer",
+            "msg": "User not authorized to claim"
+        },
+        {
+            "code": 319,
+            "name": "LowBuyout",
+            "msg": "Buyout not high enough"
+        },
+        {
+            "code": 320,
+            "name": "AuctionAlreadyEnabled",
+            "msg": "Auction has already started"
+        },
+        {
+            "code": 321,
+            "name": "SwitchboardMismatch",
+            "msg": "Switchboard account doesn't match vault account's"
+        },
+        {
+            "code": 322,
+            "name": "ZeroShares",
+            "msg": "Number of shares cannot be zero"
+        }
+    ],
+    "metadata": {
+        "address": "8NifqfdS52EsNwGMvMEJTM4YjjZY8AJipJ1V9MB7ngdo"
+    }
+}

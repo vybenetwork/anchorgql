@@ -152,6 +152,14 @@
             "PROGRAM_ID": "98utEQgwfbkvTKVS1seNQmFYFviaLsXAXqaWHr1V8JXF",
             "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
             "IDL_PATH": "./src/idls/zeta.json"
+        },
+        {
+            "PROJECT_NAME": "bridgesplit_vault_devnet",
+            "PROTOCOL": "bridgesplit",
+            "NETWORK": "devnet",
+            "PROGRAM_ID": "8NifqfdS52EsNwGMvMEJTM4YjjZY8AJipJ1V9MB7ngdo",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/vault.json"
         }
     ]
 }
