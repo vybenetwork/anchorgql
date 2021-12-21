@@ -475,8 +475,6 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
             if (signers.length > 0) {
                 const signersFromArgs = signers.map((s) => `data.accounts['${s}']`);
                 methodArgs += `\n\t\t\t\t\t signers: [${signersFromArgs.join(', ')}]\n\t\t\t\t}`;
-            } else {
-                methodArgs += `\n\t\t\t\t\t signers: []\n\t\t\t\t}`;
             }
 
             let methodName = i.name + '(' + methodArgs + ')';
