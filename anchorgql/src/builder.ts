@@ -82,7 +82,7 @@ function getGqlTypeForIdlScalarType(idlType: IdlType): string {
     }
 }
 
-async function getAccountTypes(): Promise<Operations> {
+function getAccountTypes(): Operations {
     const projectName = config.projectName;
     try {
         if ('accounts' in idlConfig) {
@@ -114,7 +114,7 @@ async function getAccountTypes(): Promise<Operations> {
     }
 }
 
-async function getAccountRootTypes(): Promise<Operations> {
+function getAccountRootTypes(): Operations {
     let projectName = config.projectName;
     if ('accounts' in idlConfig) {
         let mapping = idlConfig.accounts.map((x: IdlTypeDef) => {
@@ -131,13 +131,19 @@ async function getAccountRootTypes(): Promise<Operations> {
     }
 }
 
-async function getQueryType(): Promise<Operations> {
+function getQueryType(): Operations {
     const projectName = config.projectName;
-    let subgraph = 'program_' + projectName;
-    return [['Query', { [subgraph]: convertPascal(projectName) }]];
+    let subgraph = 'program_' + projectName + '_query';
+    return [['Query', { [subgraph]: convertPascal(projectName) + '_Query' }]];
 }
 
-async function getRootType(): Promise<Operations> {
+function getMutationType(): Operations {
+    const projectName = config.projectName;
+    let subgraph = 'program_' + projectName + '_mutation';
+    return [['Mutation', { [subgraph]: convertPascal(projectName) + '_Mutation' }]];
+}
+
+function getRootType(): Operations {
     let projectName = config.projectName;
     let accountNames = [];
 
@@ -149,15 +155,47 @@ async function getRootType(): Promise<Operations> {
         });
         accountNames.push({ config: 'Config' });
         // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
-        return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
+        return [
+            [projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Query', Object.assign({}, ...accountNames)],
+        ];
     } else {
         accountNames.push({ config: 'Config' });
         // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
-        return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
+        return [
+            [projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Query', Object.assign({}, ...accountNames)],
+        ];
     }
 }
 
-async function getTypesForStructs(): Promise<Operations> {
+function getMutationRootType(): Operations {
+    let projectName = config.projectName;
+    let mutations = [];
+    if ('instructions' in idlConfig) {
+        mutations = idlConfig.instructions.map((i: IdlInstruction) => {
+            let hasArgs = i.args.length > 0;
+            let hasAccounts = i.accounts.length > 0;
+            let mutationInput = '';
+            if (hasArgs) {
+                mutationInput += 'args: ' + convertPascal(projectName) + '_' + i.name + '_Arguments, ';
+            }
+            if (hasAccounts) {
+                mutationInput += 'accounts: ' + convertPascal(projectName) + '_' + i.name + '_Accounts, ';
+            }
+            if (mutationInput.length > 0) {
+                mutationInput = '(' + mutationInput + ')';
+            }
+            return {
+                [projectName + '_' + i.name + mutationInput]: 'Void',
+            };
+        });
+
+        return [
+            [projectName.charAt(0).toUpperCase() + projectName.slice(1) + 'Mutation', Object.assign({}, ...mutations)],
+        ];
+    }
+}
+
+function getTypesForStructs(): Operations {
     let projectName = config.projectName;
     let typeArr: Operations = [];
     if (idlConfig.hasOwnProperty('types')) {
@@ -180,7 +218,7 @@ async function getTypesForStructs(): Promise<Operations> {
     return typeArr;
 }
 
-async function getTypesForEnums(): Promise<Operations> {
+function getTypesForEnums(): Operations {
     let projectName = config.projectName;
     let typeArr: Operations = [];
     if (idlConfig.hasOwnProperty('types')) {
@@ -252,7 +290,7 @@ function getValuesFromAccount(account: IdlAccountItem | null): {
     );
 }
 
-async function getTypesForInstructionInputs(): Promise<Operations> {
+function getTypesForInstructionInputs(): Operations {
     let projectName = config.projectName;
     let typeArr: Operations = [];
     if (idlConfig.hasOwnProperty('instructions')) {
@@ -338,27 +376,31 @@ async function buildType(
 }
 
 async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: string): Promise<void> {
-    let query = await getQueryType();
-    let root = await getRootType();
-    let accountRoot = await getAccountRootTypes();
-    let account = await getAccountTypes();
-    let structTypes = await getTypesForStructs();
-    let enumTypes = await getTypesForEnums();
-    let instructionInputTypes = await getTypesForInstructionInputs();
+    let query = getQueryType();
+    let root = getRootType();
+    let mutation = getMutationType();
+    let mutationRoot = getMutationRootType();
+    let accountRoot = getAccountRootTypes();
+    let account = getAccountTypes();
+    let structTypes = getTypesForStructs();
+    let enumTypes = getTypesForEnums();
+    let instructionInputTypes = getTypesForInstructionInputs();
 
     let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
+    let mutationStr = await buildType(mutation);
+    let mutationRootStr = await buildType(mutationRoot);
     let accountRootStr = await buildType(accountRoot);
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
-    //let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
+    let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
     let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
     } {\n\tmessage: String\n},`;
-    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
+    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType + instructionInputTypesStr;
 
-    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
+    let typeDefs = queryStr + rootStr + mutationStr + mutationRootStr + accountRootStr + accountStr + typesStr;
 
     let data = await readFile(typeDefTemplateFile, 'utf8');
     const split = data.split('///--------------------///');
@@ -376,7 +418,8 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
     var split = data.split('///----------ACCOUNT_RESOLVERS----------///');
     let codeString = split[0]
         .replace(/__URL__/g, url)
-        .replace(/__PROJECTNAME__/g, 'program_' + projectName)
+        .replace(/__PROJECTNAME__QUERIES__/g, 'program_' + projectName + '_query')
+        .replace(/__PROJECTNAME__MUTATIONS__/g, 'program_' + projectName + '_mutation')
         .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1));
     if ('accounts' in idlConfig) {
         let accountNames = idlConfig['accounts'].map((x) => x['name']);
@@ -440,7 +483,7 @@ function generateFieldResolverForEnum(
 
 async function buildEnumFieldResolvers(indexOutputFile: string): Promise<void> {
     const enumFieldResolverString = '///----------ENUM_FIELD_RESOLVERS----------///';
-    let allEnumTypes = await getTypesForEnums();
+    let allEnumTypes = getTypesForEnums();
     // Filter to get only the main enum types and not the types for fields. Can cause a bug if a the type of
     // the field has data and name as keys and the type of data starts with Void. So far, in schema, we only
     // allow Void's here so this shouldn't happen but will have to be careful here
