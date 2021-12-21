@@ -11,6 +11,8 @@ import {
     OperationType,
     OperationName,
     OpertationReturnType,
+    IdlInstruction,
+    IdlAccountItem,
 } from './types';
 import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { camelCase } from 'lodash';
@@ -231,45 +233,103 @@ async function getTypesForEnums(): Promise<Operations> {
     return typeArr;
 }
 
+function getValuesFromAccount(account: IdlAccountItem | null): {
+    [x: string]: string;
+}[] {
+    if (account === null) {
+        return [];
+    }
+    if (!('accounts' in account)) {
+        return [
+            {
+                [account['name']]: 'String',
+            },
+        ];
+    }
+
+    return [{ [account['name']]: 'String' }].concat(
+        ...account.accounts.map((x: IdlAccountItem) => getValuesFromAccount(x)),
+    );
+}
+
+async function getTypesForInstructionInputs(): Promise<Operations> {
+    let projectName = config.projectName;
+    let typeArr: Operations = [];
+    if (idlConfig.hasOwnProperty('instructions')) {
+        let idlInstructions: IdlInstruction[] = idlConfig.instructions;
+        for (let instruction of idlInstructions) {
+            let accounts = instruction.accounts;
+            let accountValues = [];
+            accounts.map((a: IdlAccountItem) => {
+                const accountValuesFromAccount = getValuesFromAccount(a);
+                accountValues = [...accountValues, ...accountValuesFromAccount];
+            });
+            let accountsInputName = convertPascal(projectName) + '_' + instruction.name + '_Accounts';
+            typeArr.push([accountsInputName, Object.assign({}, ...accountValues)]);
+            let args = instruction.args;
+            let argValues = args.map((y: IdlField) => {
+                let key = getKeyOrGQLTypeForIDLType(y.type);
+                return {
+                    [y['name']]: key,
+                };
+            });
+
+            let argsInputName = convertPascal(projectName) + '_' + instruction.name + '_Arguments';
+            typeArr.push([argsInputName, Object.assign({}, ...argValues)]);
+        }
+    }
+    return typeArr;
+}
+
 async function buildType(
     mapping: Operations,
-    options: { isQueryString?: boolean; isEnumString?: boolean } = { isQueryString: false, isEnumString: false },
+    options: { isQueryString?: boolean; isEnumString?: boolean; isInstructionString?: boolean } = {
+        isQueryString: false,
+        isEnumString: false,
+        isInstructionString: false,
+    },
 ): Promise<string> {
     if (mapping.length !== 0) {
-        let projectName = config.projectName;
-        let stringType = mapping.map((x) => {
-            let returnType = `\ntype ${x[0]} ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
-            if (options.isQueryString) {
-                const tokenized = returnType.split('{');
-                returnType =
-                    tokenized[0] +
-                    ' {' +
-                    `\n\t"""\n\t{"programID": "${config.programID}", "protocol": "${config.protocol}", "projectName": "${config.projectName}", "network": "${config.network}"}\n\t"""` +
-                    tokenized[1];
-            }
-
-            // generate the additional union type for special enum type
-            if (options.isEnumString) {
-                if (isSpecialEnum(x)) {
-                    let unionType = x[1].data;
-                    const unionTypeSplit = unionType.split('|');
-                    if (unionTypeSplit.length > 1) {
-                        const unionTypeString = `\nunion ${x[0]}_Data = ${unionType} \n\n`;
-                        let returnTypeSplit = returnType.split('data:');
-                        returnType = unionTypeString + returnTypeSplit[0] + `data: ${x[0]}_Data \n}  \n`;
-                    }
-
-                    const enumTypes = x[1].name.split(',');
-                    const joinedEnumTypes = enumTypes.join('');
-                    let nameForEnumVariantNames = `${x[0]}_Names`;
-                    returnType = returnType.replace(joinedEnumTypes, nameForEnumVariantNames);
-
-                    let enumString = `\nenum ${nameForEnumVariantNames} {\n\t ${enumTypes.join('\n\t')} \n} \n`;
-                    returnType += enumString;
+        let stringType = mapping
+            .filter((x) => Object.keys(x[1]).length > 0)
+            .map((x) => {
+                let returnType = `\n${options.isInstructionString ? 'input' : 'type'} ${x[0]} ${JSON.stringify(
+                    x[1],
+                    null,
+                    4,
+                )} \n`.replace(/['",]+/g, '');
+                if (options.isQueryString) {
+                    const tokenized = returnType.split('{');
+                    returnType =
+                        tokenized[0] +
+                        ' {' +
+                        `\n\t"""\n\t{"programID": "${config.programID}", "protocol": "${config.protocol}", "projectName": "${config.projectName}", "network": "${config.network}"}\n\t"""` +
+                        tokenized[1];
                 }
-            }
-            return returnType;
-        });
+
+                // generate the additional union type for special enum type
+                if (options.isEnumString) {
+                    if (isSpecialEnum(x)) {
+                        let unionType = x[1].data;
+                        const unionTypeSplit = unionType.split('|');
+                        if (unionTypeSplit.length > 1) {
+                            const unionTypeString = `\nunion ${x[0]}_Data = ${unionType} \n\n`;
+                            let returnTypeSplit = returnType.split('data:');
+                            returnType = unionTypeString + returnTypeSplit[0] + `data: ${x[0]}_Data \n}  \n`;
+                        }
+
+                        const enumTypes = x[1].name.split(',');
+                        const joinedEnumTypes = enumTypes.join('');
+                        let nameForEnumVariantNames = `${x[0]}_Names`;
+                        returnType = returnType.replace(joinedEnumTypes, nameForEnumVariantNames);
+
+                        let enumString = `\nenum ${nameForEnumVariantNames} {\n\t ${enumTypes.join('\n\t')} \n} \n`;
+                        returnType += enumString;
+                    }
+                }
+
+                return returnType;
+            });
 
         return stringType.join('');
     } else {
@@ -284,6 +344,7 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let account = await getAccountTypes();
     let structTypes = await getTypesForStructs();
     let enumTypes = await getTypesForEnums();
+    let instructionInputTypes = await getTypesForInstructionInputs();
 
     let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
@@ -291,10 +352,11 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
-    let addionalDataInfoType = `\n\ntype ${
+    let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
+    let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
     } {\n\tmessage: String\n},`;
-    let typesStr = structTypesStr + enumTypesStr + addionalDataInfoType;
+    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType + instructionInputTypesStr;
 
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
 
