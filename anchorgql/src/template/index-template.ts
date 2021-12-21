@@ -88,9 +88,12 @@ import { typeDefs } from './root';
 const resolvers = {
     BigInt: BigIntResolver,
     Query: {
-        __PROJECTNAME__: () => ({}),
+        __PROJECTNAME__QUERIES__: () => ({}),
     },
-    __ROOTNAME__: {
+    Mutation: {
+        __PROJECTNAME__MUTATIONS__: () => ({}),
+    },
+    __ROOTNAME__QUERIES__: {
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (_, data) => {
             return await getAccountData('__ANCHORACCOUNTNAME__', data['id']);
@@ -109,6 +112,21 @@ const resolvers = {
                 programId: configVars.programID,
             };
         },
+    },
+    __ROOTNAME__MUTATIONS__: {
+        ///----------MUTATIONS_RESOLVERS----------///
+        __INSTRUCTIONNAME__: async (_, data) => {
+            let result = null;
+            try {
+                result = await client.rpc.__METHOD__CALL__;
+            } catch (e) {
+                // TODO: Change this to return a mutation error type
+                throw e;
+            }
+            return result ? result.toString() : 'The mutation executed successfully but no response was returned.';
+        },
+
+        ///----------MUTATIONS_RESOLVERS----------///
     },
     ///----------ENUM_FIELD_RESOLVERS----------///
 

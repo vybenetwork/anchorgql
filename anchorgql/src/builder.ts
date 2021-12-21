@@ -185,12 +185,13 @@ function getMutationRootType(): Operations {
                 mutationInput = '(' + mutationInput + ')';
             }
             return {
-                [projectName + '_' + i.name + mutationInput]: 'Void',
+                // TODO: Use a special mutation return type here
+                [projectName + '_' + i.name + mutationInput]: 'String',
             };
         });
 
         return [
-            [projectName.charAt(0).toUpperCase() + projectName.slice(1) + 'Mutation', Object.assign({}, ...mutations)],
+            [projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Mutation', Object.assign({}, ...mutations)],
         ];
     }
 }
@@ -410,6 +411,13 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     await writeFile(typeDefOutputFile, codeString);
 }
 
+function getSignersFromAccount(account: IdlAccountItem): string[] {
+    if (!('accounts' in account)) {
+        return account.isSigner ? [account.name] : [];
+    }
+    return [].concat(...account.accounts.map((x: IdlAccountItem) => getSignersFromAccount(x)));
+}
+
 async function buildResolvers(indexTemplateFile: string, indexOutputFile: string): Promise<void> {
     let projectName = config.projectName;
     let url = config.anchorProviderURL;
@@ -420,13 +428,13 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
         .replace(/__URL__/g, url)
         .replace(/__PROJECTNAME__QUERIES__/g, 'program_' + projectName + '_query')
         .replace(/__PROJECTNAME__MUTATIONS__/g, 'program_' + projectName + '_mutation')
-        .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1));
+        .replace(/__ROOTNAME__QUERIES__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Query');
     if ('accounts' in idlConfig) {
         let accountNames = idlConfig['accounts'].map((x) => x['name']);
         for (let x of accountNames) {
             let acc = projectName + '_' + x;
-            var result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
-            var result = result.replace(/__ACCOUNTNAME__/g, acc);
+            let result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
+            result = result.replace(/__ACCOUNTNAME__/g, acc);
             codeString = codeString.concat(result);
         }
         codeString = codeString.concat(split[2]);
@@ -441,6 +449,46 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
         codeString = split[0].concat(split[2]);
         codeString = codeString.replace(/const eventParser = true/g, 'const eventParser = false');
     }
+
+    codeString = codeString.replace(
+        /__ROOTNAME__MUTATIONS__/g,
+        projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Mutation',
+    );
+    split = codeString.split('///----------MUTATIONS_RESOLVERS----------///');
+    if ('instructions' in idlConfig) {
+        for (let i of idlConfig['instructions'] as IdlInstruction[]) {
+            let instruction = projectName + '_' + i['name'];
+            let result = split[1].replace(/__INSTRUCTIONNAME__/g, instruction);
+            let signers = [];
+            i.accounts.map((a) => {
+                const signersFromAccount = getSignersFromAccount(a);
+                signers = [...signers, ...signersFromAccount];
+            });
+            let methodArgs = '';
+            if (i.args.length > 0) {
+                methodArgs += `...data['args'],`;
+            }
+            if (i.accounts.length > 0) {
+                methodArgs += ` {\n\t\t\t\t\t accounts: [...data['accounts']], `;
+            }
+
+            if (signers.length > 0) {
+                const signersFromArgs = signers.map((s) => `data.accounts['${s}']`);
+                methodArgs += `\n\t\t\t\t\t signers: [${signersFromArgs.join(', ')}]\n\t\t\t\t}`;
+            } else {
+                methodArgs += `\n\t\t\t\t\t signers: []\n\t\t\t\t}`;
+            }
+
+            let methodName = i.name + '(' + methodArgs + ')';
+            result = result.replace(/__METHOD__CALL__/g, methodName);
+            codeString = split[0].concat(result);
+            split[0] = split[0].concat(result);
+        }
+        codeString = codeString.concat(split[2]);
+    } else {
+        codeString = split[0].concat(split[2]);
+    }
+
     await writeFile(indexOutputFile, codeString);
 
     await buildEnumFieldResolvers(indexOutputFile);
