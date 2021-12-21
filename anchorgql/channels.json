@@ -154,6 +154,14 @@
             "IDL_PATH": "./src/idls/zeta.json"
         },
         {
+            "PROJECT_NAME": "abc_structured_devnet",
+            "PROTOCOL": "abc",
+            "NETWORK": "devnet",
+            "PROGRAM_ID": "1349iiGjWC7ZTbu6otFmJwztms122jEEnShKgpVnNewy",
+            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "IDL_PATH": "./src/idls/structured.json"
+        },
+        {
             "PROJECT_NAME": "bridgesplit_vault_devnet",
             "PROTOCOL": "bridgesplit",
             "NETWORK": "devnet",

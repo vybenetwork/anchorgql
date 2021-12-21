@@ -352,11 +352,11 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
-    let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
+    //let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
     let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
     } {\n\tmessage: String\n},`;
-    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType + instructionInputTypesStr;
+    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
 
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
 
