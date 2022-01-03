@@ -1,0 +1,826 @@
+{
+    "version": "0.0.0",
+    "name": "cyclos",
+    "instructions": [
+      {
+        "name": "initPool",
+        "accounts": [
+          {
+            "name": "poolCreator",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "openOrders",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "rent",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "openOrdersBump",
+            "type": "u8"
+          }
+        ]
+      },
+      {
+        "name": "createPosition",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "nftMint",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "positionTokenAccount",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "positionDataAccount",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "coinWallet",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pcWallet",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "vaultAuthority",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosCoinVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosPcVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "tokenProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "associatedTokenProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "systemProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "rent",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "positionBump",
+            "type": "u8"
+          },
+          {
+            "name": "mintBump",
+            "type": "u8"
+          },
+          {
+            "name": "vaultAuthorityBump",
+            "type": "u8"
+          },
+          {
+            "name": "mintInitRandomSeed",
+            "type": "u32"
+          },
+          {
+            "name": "startTick",
+            "type": "u64"
+          },
+          {
+            "name": "endTick",
+            "type": "u64"
+          },
+          {
+            "name": "pcLiquidity",
+            "type": "u64"
+          },
+          {
+            "name": "coinLiquidity",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "requestUnlock",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "positionTokenAccount",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "positionDataAccount",
+            "isMut": true,
+            "isSigner": false
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "addTokensToUnlockedPosition",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "vaultAuthority",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "positionTokenAccount",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "positionDataAccount",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "coinWallet",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pcWallet",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosCoinVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosPcVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "tokenProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "vaultAuthorityBump",
+            "type": "u8"
+          },
+          {
+            "name": "coinQty",
+            "type": "u64"
+          },
+          {
+            "name": "pcQty",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "withdrawTokensFromPosition",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "vaultAuthority",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "positionTokenAccount",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "positionDataAccount",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "coinWallet",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pcWallet",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosCoinVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosPcVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "tokenProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "vaultAuthorityBump",
+            "type": "u8"
+          },
+          {
+            "name": "coinQty",
+            "type": "u64"
+          },
+          {
+            "name": "pcQty",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "lockPosition",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "positionTokenAccount",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "positionDataAccount",
+            "isMut": true,
+            "isSigner": false
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "unlockPosition",
+        "accounts": [
+          {
+            "name": "crank",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "positionDataAccount",
+            "isMut": true,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "unlockedCoinQty",
+            "type": "u64"
+          },
+          {
+            "name": "unlockedPcQty",
+            "type": "u64"
+          }
+        ]
+      },
+      {
+        "name": "placeOrder",
+        "accounts": [
+          {
+            "name": "crank",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "requestQueue",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "eventQueue",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "bids",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "asks",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "coinVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pcVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "vaultSigner",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "vaultAuthority",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "payingVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "openOrders",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "tokenProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "dexProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "rent",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "vaultAuthorityBump",
+            "type": "u8"
+          },
+          {
+            "name": "openOrdersBump",
+            "type": "u8"
+          },
+          {
+            "name": "limitPrice",
+            "type": "u64"
+          },
+          {
+            "name": "orderSize",
+            "type": "u64"
+          },
+          {
+            "name": "isBid",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "settleOrders",
+        "accounts": [
+          {
+            "name": "crank",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "coinVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "pcVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "vaultSigner",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "openOrders",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "vaultAuthority",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosCoinVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "cyclosPcVault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "tokenProgram",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "dexProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "vaultAuthorityBump",
+            "type": "u8"
+          },
+          {
+            "name": "openOrdersBump",
+            "type": "u8"
+          }
+        ]
+      },
+      {
+        "name": "cancelOrderById",
+        "accounts": [
+          {
+            "name": "crank",
+            "isMut": false,
+            "isSigner": true
+          },
+          {
+            "name": "market",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "bids",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "asks",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "eventQueue",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "openOrders",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "vaultAuthority",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "dexProgram",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": [
+          {
+            "name": "vaultAuthorityBump",
+            "type": "u8"
+          },
+          {
+            "name": "openOrdersBump",
+            "type": "u8"
+          },
+          {
+            "name": "isBid",
+            "type": "bool"
+          },
+          {
+            "name": "orderId",
+            "type": "u128"
+          }
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "name": "PositionDataAccount",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "startTick",
+              "type": "u64"
+            },
+            {
+              "name": "endTick",
+              "type": "u64"
+            },
+            {
+              "name": "bump",
+              "type": "u8"
+            },
+            {
+              "name": "state",
+              "type": {
+                "defined": "PositionState"
+              }
+            },
+            {
+              "name": "unlockedCoinQty",
+              "type": "u64"
+            },
+            {
+              "name": "unlockedPcQty",
+              "type": "u64"
+            }
+          ]
+        }
+      }
+    ],
+    "types": [
+      {
+        "name": "PositionState",
+        "type": {
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Locked"
+            },
+            {
+              "name": "UnlockRequested"
+            },
+            {
+              "name": "Unlocked"
+            }
+          ]
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "InitPoolEvent",
+        "fields": [
+          {
+            "name": "market",
+            "type": "publicKey",
+            "index": true
+          }
+        ]
+      },
+      {
+        "name": "CreatePositionEvent",
+        "fields": [
+          {
+            "name": "market",
+            "type": "publicKey",
+            "index": true
+          },
+          {
+            "name": "positionDataAccount",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "startTick",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "endTick",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "pcLiquidity",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "coinLiquidity",
+            "type": "u64",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "PlaceOrderEvent",
+        "fields": [
+          {
+            "name": "market",
+            "type": "publicKey",
+            "index": true
+          },
+          {
+            "name": "limitPrice",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "orderSize",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "isBid",
+            "type": "bool",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "SettleOrdersEvent",
+        "fields": [
+          {
+            "name": "market",
+            "type": "publicKey",
+            "index": true
+          }
+        ]
+      },
+      {
+        "name": "CancelOrderEvent",
+        "fields": [
+          {
+            "name": "orderId",
+            "type": "u128",
+            "index": true
+          },
+          {
+            "name": "market",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "isBid",
+            "type": "bool",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "RequestUnlockEvent",
+        "fields": [
+          {
+            "name": "positionDataAccount",
+            "type": "publicKey",
+            "index": true
+          }
+        ]
+      },
+      {
+        "name": "UnlockPositionEvent",
+        "fields": [
+          {
+            "name": "positionDataAccount",
+            "type": "publicKey",
+            "index": true
+          }
+        ]
+      },
+      {
+        "name": "AddTokensToPositionEvent",
+        "fields": [
+          {
+            "name": "positionDataAccount",
+            "type": "publicKey",
+            "index": true
+          }
+        ]
+      },
+      {
+        "name": "WithdrawTokensFromPositionEvent",
+        "fields": [
+          {
+            "name": "positionDataAccount",
+            "type": "publicKey",
+            "index": true
+          },
+          {
+            "name": "market",
+            "type": "publicKey",
+            "index": false
+          },
+          {
+            "name": "coinQty",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "pcQty",
+            "type": "u64",
+            "index": false
+          }
+        ]
+      },
+      {
+        "name": "LockPositionEvent",
+        "fields": [
+          {
+            "name": "positionDataAccount",
+            "type": "publicKey",
+            "index": true
+          },
+          {
+            "name": "lockedCoinQty",
+            "type": "u64",
+            "index": false
+          },
+          {
+            "name": "lockedPcQty",
+            "type": "u64",
+            "index": false
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+    }
+  }
