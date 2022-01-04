@@ -1,10 +1,10 @@
 {
-    "projectName": "basic_basic_testnet",
-    "protocol": "basic",
+    "projectName": "basic1_basic1_testnet",
+    "protocol": "basic1",
     "network": "testnet",
     "programID": "9wCLHPpcdgJbpeuwG7Ny16bhbEp4SHmSUi3CeV1fuutM",
     "anchorProviderURL": "http://127.0.0.1:8899",
-    "idlPath": "./src/idls/basic0.json",
+    "idlPath": "./src/idls/basic1.json",
     "anchorVersion": "0.14.0",
     "idl": null,
     "port": 51305,

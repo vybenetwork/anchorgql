@@ -1,9 +1,9 @@
 import { ApolloServer } from 'apollo-server-express';
-import { BigIntResolver } from 'graphql-scalars';
+import { BigIntResolver, ByteResolver } from 'graphql-scalars';
 import express from 'express';
 import { AddressInfo } from 'net';
 import { Provider, setProvider, web3, Program } from '@project-serum/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, Transaction } from '@solana/web3.js';
 import BN from 'bn.js';
 import { readFileSync } from 'fs';
 import configVars from './config.json';
@@ -87,6 +87,7 @@ import { typeDefs } from './root';
 
 const resolvers = {
     BigInt: BigIntResolver,
+    Byte: ByteResolver,
     Query: {
         __PROJECTNAME__QUERIES__: () => ({}),
     },
@@ -116,14 +117,28 @@ const resolvers = {
     __ROOTNAME__MUTATIONS__: {
         ///----------MUTATIONS_RESOLVERS----------///
         __INSTRUCTIONNAME__: async (_, data) => {
-            let result = null;
+            const recentBlockHash = await client.provider.connection.getRecentBlockhash();
             try {
-                result = await client.rpc.__METHOD__CALL__;
+                const transaction = client.transaction.__METHOD__CALL__;
+                transaction.recentBlockhash = recentBlockHash.blockhash;
+                try {
+                    const feePayerKey =
+                        Object.keys(data.accounts).length > 0
+                            ? new PublicKey(data.accounts[Object.keys(data.accounts)[0]])
+                            : provider.wallet.publicKey;
+                    transaction.feePayer = feePayerKey;
+                    return transaction.serializeMessage();
+                } catch (e) {
+                    if (e.message.includes('Non-base58 character')) {
+                        throw 'Failed to convert the first provided account key to a PublicKey. Please check that the key is in valid base58 encoding.';
+                    }
+                    throw e;
+                }
             } catch (e) {
                 // TODO: Change this to return a mutation error type
                 throw e;
             }
-            return result ? result.toString() : 'The mutation executed successfully but no response was returned.';
+            //return result ? result.toString() : 'The mutation executed successfully but no response was returned.';
         },
 
         ///----------MUTATIONS_RESOLVERS----------///
