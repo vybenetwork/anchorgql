@@ -118,16 +118,44 @@ const resolvers = {
         ///----------MUTATIONS_RESOLVERS----------///
         __INSTRUCTIONNAME__: async (_, data) => {
             const recentBlockHash = await client.provider.connection.getRecentBlockhash();
+            let accountsMerged = {};
+            let mergedArgs = [];
+            if (data.accounts) {
+                try {
+                    let accounts = Object.keys(data.accounts).map((a) => {
+                        return {
+                            [a]: new PublicKey(data.accounts[a]),
+                        };
+                    });
+                    accountsMerged = accounts.reduce((r, c) => Object.assign(r, c), {});
+                } catch (e) {
+                    if (e.message.includes('Non-base58 character')) {
+                        throw 'Failed to convert the first provided account key to a PublicKey. Please check that the key is in valid base58 encoding.';
+                    }
+                    throw e;
+                }
+            }
+
+            if (data.args) {
+                mergedArgs = Object.keys(data.args).map((a) => {
+                    const typeOfArg = typeof data.args[a];
+                    if (typeOfArg === 'bigint') {
+                        return new BN(data.args[a]);
+                    }
+                    return data.args[a];
+                });
+            }
+
             try {
                 const transaction = client.transaction.__METHOD__CALL__;
                 transaction.recentBlockhash = recentBlockHash.blockhash;
                 try {
                     const feePayerKey =
-                        Object.keys(data.accounts).length > 0
+                        data.accounts && Object.keys(data.accounts).length > 0
                             ? new PublicKey(data.accounts[Object.keys(data.accounts)[0]])
                             : provider.wallet.publicKey;
                     transaction.feePayer = feePayerKey;
-                    return transaction.serializeMessage();
+                    return transaction.serialize({ verifySignatures: false });
                 } catch (e) {
                     if (e.message.includes('Non-base58 character')) {
                         throw 'Failed to convert the first provided account key to a PublicKey. Please check that the key is in valid base58 encoding.';

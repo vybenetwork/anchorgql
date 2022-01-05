@@ -1,12 +1,12 @@
 {
     "version": "0.1.0",
-    "name": "basic_1",
+    "name": "basic_2",
     "instructions": [
         {
-            "name": "initialize",
+            "name": "create",
             "accounts": [
                 {
-                    "name": "myAccount",
+                    "name": "counter",
                     "isMut": true,
                     "isSigner": true
                 },
@@ -23,36 +23,40 @@
             ],
             "args": [
                 {
-                    "name": "data",
-                    "type": "u64"
+                    "name": "authority",
+                    "type": "publicKey"
                 }
             ]
         },
         {
-            "name": "update",
+            "name": "increment",
             "accounts": [
                 {
-                    "name": "myAccount",
+                    "name": "counter",
                     "isMut": true,
                     "isSigner": false
+                },
+                {
+                    "name": "authority",
+                    "isMut": false,
+                    "isSigner": true
                 }
             ],
-            "args": [
-                {
-                    "name": "data",
-                    "type": "u64"
-                }
-            ]
+            "args": []
         }
     ],
     "accounts": [
         {
-            "name": "MyAccount",
+            "name": "Counter",
             "type": {
                 "kind": "struct",
                 "fields": [
                     {
-                        "name": "data",
+                        "name": "authority",
+                        "type": "publicKey"
+                    },
+                    {
+                        "name": "count",
                         "type": "u64"
                     }
                 ]
@@ -60,6 +64,6 @@
         }
     ],
     "metadata": {
-        "address": "8WipU4FtARN7gG1sdL23Q4i1dihyfqgAFymCUGskmNWx"
+        "address": "G8e29rPunmK4SZ9H83Bzh3rqkJU2ewsoiWMqfMZzHQmz"
     }
 }

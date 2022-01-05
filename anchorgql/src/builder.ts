@@ -185,7 +185,6 @@ function getMutationRootType(): Operations {
                 mutationInput = '(' + mutationInput + ')';
             }
             return {
-                // TODO: Use a special mutation return type here
                 [projectName + '_' + i.name + mutationInput]: 'Byte',
             };
         });
@@ -466,16 +465,11 @@ async function buildResolvers(indexTemplateFile: string, indexOutputFile: string
             });
             let methodArgs = '';
             if (i.args.length > 0) {
-                methodArgs += `...data['args'],`;
+                methodArgs += '...mergedArgs,';
             }
             if (i.accounts.length > 0) {
-                methodArgs += ` {\n\t\t\t\t\t accounts: [...data['accounts']]}`;
+                methodArgs += ` {\n\t\t\t\t\t accounts: accountsMerged \n\t\t\t\t}`;
             }
-
-            // if (signers.length > 0) {
-            //     const signersFromArgs = signers.map((s) => `data.accounts['${s}']`);
-            //     methodArgs += `\n\t\t\t\t\t signers: [${signersFromArgs.join(', ')}]\n\t\t\t\t}`;
-            // }
 
             let methodName = i.name + '(' + methodArgs + ')';
             result = result.replace(/__METHOD__CALL__/g, methodName);

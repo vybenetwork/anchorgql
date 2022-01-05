@@ -2,7 +2,7 @@
     "projectName": "basic1_basic1_testnet",
     "protocol": "basic1",
     "network": "testnet",
-    "programID": "9wCLHPpcdgJbpeuwG7Ny16bhbEp4SHmSUi3CeV1fuutM",
+    "programID": "8WipU4FtARN7gG1sdL23Q4i1dihyfqgAFymCUGskmNWx",
     "anchorProviderURL": "http://127.0.0.1:8899",
     "idlPath": "./src/idls/basic1.json",
     "anchorVersion": "0.14.0",
