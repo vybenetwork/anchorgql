@@ -52,3 +52,4 @@ channel_*
 server*
 node_modules
 
+anchorgql/src/program_*
