@@ -4,7 +4,14 @@ export type OpertationReturnType = string & {};
 
 export type OperationType = string & {};
 
-export type Operations = [type: OperationType, options: Record<OperationName, OpertationReturnType>][];
+export type OperationArguments = string & {};
+
+//TODO: Simplify this
+export type Operation = [
+    type: OperationType,
+    options: Record<OperationName, OpertationReturnType>,
+    args?: OperationArguments,
+];
 
 //#region IDL Types
 

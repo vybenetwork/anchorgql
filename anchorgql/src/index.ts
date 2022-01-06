@@ -20,13 +20,13 @@ async function copyFiles(path: string) {
 
 async function main() {
     //** Edit this to change your server directory */
-    const subDir = config.prdMode ? './src/server' : './src/program_' + config.projectName;
-    const pwd = process.cwd();
+    const SUB_DIR = config.prdMode ? './src/server' : './src/program_' + config.projectName;
+
     let idlConfig = await import('../' + config.idlPath);
-    const indexOutputFile = subDir + '/src/index.ts';
-    const typeDefOutputFile = subDir + '/src/root.ts';
-    await makeDirs(subDir);
-    await copyFiles(subDir);
+    const indexOutputFile = SUB_DIR + '/src/index.ts';
+    const typeDefOutputFile = SUB_DIR + '/src/root.ts';
+    await makeDirs(SUB_DIR);
+    await copyFiles(SUB_DIR);
     await buildTypeDef(idlConfig, config.typeDefTemplateFile, typeDefOutputFile);
     await buildResolvers(idlConfig, config.indexTemplateFile, indexOutputFile);
     console.log('Successfully generated the new graphql project');

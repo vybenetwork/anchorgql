@@ -1,13 +1,4 @@
-import {
-    OperationType,
-    OperationName,
-    OpertationReturnType,
-    IdlType,
-    IdlTypeVec,
-    IdlTypeOption,
-    IdlTypeDefined,
-    IdlTypeArray,
-} from './types';
+import { IdlType, IdlTypeVec, IdlTypeOption, IdlTypeDefined, IdlTypeArray, Operation } from './types';
 import * as config from './config.json';
 
 export function getKeyOrGQLTypeForIDLType(idlType: IdlType): string {
@@ -60,9 +51,7 @@ export function getGqlTypeForIdlScalarType(idlType: IdlType): string {
     }
 }
 
-export function isSpecialEnum(
-    operation: [type: OperationType, options: Record<OperationName, OpertationReturnType>],
-): boolean {
+export function isSpecialEnum(operation: Operation): boolean {
     return (
         Object.keys(operation).length === 2 &&
         Object.keys(operation[1]).includes('name') &&

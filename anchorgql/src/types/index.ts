@@ -1,13 +1,13 @@
 import { camelCase } from 'lodash';
 import * as config from '../config.json';
-import { Idl, IdlField, IdlType, IdlTypeDef, Operations } from '../types';
+import { Idl, IdlField, IdlType, IdlTypeDef, Operation } from '../types';
 import { convertPascal, getGqlTypeForIdlScalarType, getKeyForIdlObjectType, getKeyOrGQLTypeForIDLType } from '../utils';
 
-export async function getAccountTypes(idlConfig: Idl): Promise<Operations> {
+export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
     const projectName = config.projectName;
     try {
         if ('accounts' in idlConfig) {
-            let mapping: Operations = idlConfig.accounts.map((x: IdlTypeDef) => {
+            let mapping: Operation[] = idlConfig.accounts.map((x: IdlTypeDef) => {
                 let name = convertPascal(projectName) + '_' + x.name + 'Account';
                 let fields = x.type.fields.map((y) => {
                     let key: string;
@@ -35,10 +35,10 @@ export async function getAccountTypes(idlConfig: Idl): Promise<Operations> {
     }
 }
 
-export async function getAccountRootTypes(idlConfig: Idl): Promise<Operations> {
+export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
     if ('accounts' in idlConfig) {
-        let mapping: Operations = idlConfig.accounts.map((x: IdlTypeDef) => {
+        let mapping: Operation[] = idlConfig.accounts.map((x: IdlTypeDef) => {
             let name = convertPascal(projectName) + '_' + x.name;
             let fields = {
                 publicKey: 'String',
@@ -52,13 +52,13 @@ export async function getAccountRootTypes(idlConfig: Idl): Promise<Operations> {
     }
 }
 
-export async function getQueryType(): Promise<Operations> {
+export async function getQueryType(): Promise<Operation[]> {
     const projectName = config.projectName;
     let subgraph = 'program_' + projectName;
     return [['Query', { [subgraph]: convertPascal(projectName) }]];
 }
 
-export async function getRootType(idlConfig: Idl): Promise<Operations> {
+export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
     let accountNames = [];
 
@@ -78,9 +78,9 @@ export async function getRootType(idlConfig: Idl): Promise<Operations> {
     }
 }
 
-export async function getStructTypes(idlConfig: Idl): Promise<Operations> {
+export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
-    let typeArr: Operations = [];
+    let typeArr: Operation[] = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
         let idlStructTypes = idlTypes.filter((x) => x.type.kind === 'struct');
@@ -103,9 +103,9 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operations> {
 
 //#region Enums
 
-export async function getEnumTypes(idlConfig: Idl): Promise<Operations> {
+export async function getEnumTypes(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
-    let typeArr: Operations = [];
+    let typeArr: Operation[] = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
         let idlEnumTypes = idlTypes.filter((x) => x.type.kind === 'enum');

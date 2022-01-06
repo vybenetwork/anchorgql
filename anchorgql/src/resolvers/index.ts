@@ -1,13 +1,10 @@
-import { Idl, OperationName, Operations, OperationType, OpertationReturnType } from '../types';
+import { Idl, OperationName, Operation, OperationType, OpertationReturnType } from '../types';
 import { convertPascal, isSpecialEnum } from '../utils';
 import * as config from '../config.json';
 import { getEnumTypes } from '../types/index';
 import { readFile, writeFile } from 'fs/promises';
 
-export function generateFieldResolverForEnum(
-    enumData: [type: OperationType, options: Record<OperationName, OpertationReturnType>],
-    enumTypes: Operations,
-): string {
+export function generateFieldResolverForEnum(enumData: Operation, enumTypes: Operation[]): string {
     const projectName = convertPascal(config.projectName);
     const fieldResolver = `${enumData[0]}: {
         name: async(parent) => {

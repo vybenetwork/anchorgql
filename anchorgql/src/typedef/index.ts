@@ -1,4 +1,4 @@
-import { Idl, Operations } from '../types';
+import { Idl, Operation } from '../types';
 import { getAccountRootTypes, getAccountTypes, getQueryType, getRootType } from '../queries';
 import { getEnumTypes, getStructTypes } from '../types/index';
 import * as config from '../config.json';
@@ -7,7 +7,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { buildEnumFieldResolvers } from '../resolvers';
 
 async function buildType(
-    mapping: Operations,
+    mapping: Operation[],
     options: { isQueryString?: boolean; isEnumString?: boolean; isInstructionString?: boolean } = {
         isQueryString: false,
         isEnumString: false,
@@ -96,39 +96,4 @@ export async function buildTypeDef(
     codeString = codeString.concat(typeDefs);
     codeString = codeString.concat(split[1]);
     await writeFile(typeDefOutputFile, codeString);
-}
-
-async function buildResolvers(idlConfig: Idl, indexTemplateFile: string, indexOutputFile: string): Promise<void> {
-    let projectName = config.projectName;
-    let url = config.anchorProviderURL;
-    // ACCOUNT SETUP
-    let data = await readFile(indexTemplateFile, 'utf8');
-    var split = data.split('///----------ACCOUNT_RESOLVERS----------///');
-    let codeString = split[0]
-        .replace(/__URL__/g, url)
-        .replace(/__PROJECTNAME__/g, 'program_' + projectName)
-        .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1));
-    if ('accounts' in idlConfig) {
-        let accountNames = idlConfig['accounts'].map((x) => x['name']);
-        for (let x of accountNames) {
-            let acc = projectName + '_' + x;
-            var result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
-            var result = result.replace(/__ACCOUNTNAME__/g, acc);
-            codeString = codeString.concat(result);
-        }
-        codeString = codeString.concat(split[2]);
-    } else {
-        codeString = codeString.concat(split[2]);
-    }
-
-    split = codeString.split('///----------EVENT_RESOLVER----------///');
-    if ('events' in idlConfig) {
-        codeString = split[0].concat(split[1]).concat(split[2]);
-    } else {
-        codeString = split[0].concat(split[2]);
-        codeString = codeString.replace(/const eventParser = true/g, 'const eventParser = false');
-    }
-    await writeFile(indexOutputFile, codeString);
-
-    await buildEnumFieldResolvers(indexOutputFile, idlConfig);
 }
