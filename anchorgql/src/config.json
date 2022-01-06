@@ -1,10 +1,10 @@
 {
-    "projectName": "abc_structured_devnet",
-    "protocol": "abc",
+    "projectName": "jet_jet_devnet",
+    "protocol": "jet",
     "network": "mainnet",
     "programID": "1349iiGjWC7ZTbu6otFmJwztms122jEEnShKgpVnNewy",
     "anchorProviderURL": "https://api.mainnet-beta.solana.com",
-    "idlPath": "./src/idls/structured.json",
+    "idlPath": "./src/idls/jet.json",
     "anchorVersion": "0.14.0",
     "idl": null,
     "port": 51305,
