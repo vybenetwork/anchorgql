@@ -34,6 +34,60 @@ function isSpecialEnum(
     );
 }
 
+function typeExistsInsideAnotherType(typeName: string, objectType: IdlType): boolean {
+    //TODO:
+    return false;
+}
+
+function typeIsUsedInInstructionInputs(typeName: string): boolean {
+    let instructions: IdlInstruction[] = idlConfig.instructions;
+    let projectName = convertPascal(config.projectName);
+    for (let i of instructions) {
+        let instructionArgs = i.args;
+        for (let a of instructionArgs) {
+            let key = getKeyOrGQLTypeForIDLType(a.type);
+            if (key === 'String' || key === 'Int' || key === 'BigInt' || key === 'Boolean') {
+                continue;
+            } else {
+                if (key === `${projectName}_${typeName}`) {
+                    return true;
+                }
+                if (typeExistsInsideAnotherType(typeName, a.type)) {
+                    return true;
+                }
+                continue;
+            }
+        }
+    }
+    return false;
+}
+
+function getInputTypeForType(
+    type: [type: OperationType, options: Record<OperationName, OpertationReturnType>],
+): [type: OperationType, options: Record<OperationName, OpertationReturnType>] {
+    let mainInputName = type[0] + '_Input';
+    let inputArgs = Object.keys(type[1]).reduce(function (c, p) {
+        const typeOfInputArg = type[1][p];
+        if (
+            typeOfInputArg === 'String' ||
+            typeOfInputArg === '[String]' ||
+            typeOfInputArg === 'Int' ||
+            typeOfInputArg === '[Int]' ||
+            typeOfInputArg === 'BigInt' ||
+            typeOfInputArg === '[BigInt]' ||
+            typeOfInputArg === 'Boolean' ||
+            typeOfInputArg === '[Boolean]'
+        ) {
+            c[p] = typeOfInputArg;
+        } else {
+            c[p] = typeOfInputArg + '_Input';
+        }
+
+        return c;
+    }, Object.create(null));
+    return [mainInputName, inputArgs];
+}
+
 function getKeyOrGQLTypeForIDLType(idlType: IdlType): string {
     if (idlType instanceof Object) {
         return getKeyForIdlObjectType(idlType);
@@ -225,6 +279,7 @@ function getTypesForEnums(): Operations {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
         let idlEnumTypes = idlTypes.filter((x) => x.type.kind === 'enum');
         for (let x of idlEnumTypes) {
+            const isEnumUsedInIstructionArg = typeIsUsedInInstructionInputs(x.name);
             let enumVariants = x.type.variants;
             let variantsWithFields = [];
             // first generate types for all the variants with fields in them
@@ -271,6 +326,51 @@ function getTypesForEnums(): Operations {
     return typeArr;
 }
 
+function getTypeForEnumInputs(): Operations {
+    let projectName = convertPascal(config.projectName);
+    let typeArr: Operations = [];
+    if (idlConfig.hasOwnProperty('types')) {
+        let idlTypes: IdlTypeDef[] = idlConfig.types;
+        let idlEnumTypes = idlTypes.filter((x) => x.type.kind === 'enum');
+        for (let x of idlEnumTypes) {
+            if (typeIsUsedInInstructionInputs(x.name)) {
+                let values = [];
+                values.push({
+                    name: convertPascal(projectName) + '_' + x.name + '_Names',
+                });
+                let enumVariants = x.type.variants;
+                for (let v of enumVariants) {
+                    if ('fields' in v) {
+                        let name = v.name;
+                        let eValues = v.fields.map((z: IdlField | IdlType) => {
+                            if (z instanceof Object) {
+                                const castedIdlField = z as IdlField;
+                                return {
+                                    [camelCase(castedIdlField.name)]: getKeyOrGQLTypeForIDLType(castedIdlField.type),
+                                };
+                            } else {
+                                return {
+                                    [camelCase(z)]: getKeyOrGQLTypeForIDLType(z),
+                                };
+                            }
+                        });
+                        const typeName = convertPascal(projectName) + '_' + name + '_Input';
+                        typeArr.push([typeName, Object.assign({}, ...eValues)]);
+                        let vName = projectName + '_' + v.name + '_Input';
+                        values.push({
+                            [projectName + '_' + v.name + '_AddtionalFields']: vName,
+                        });
+
+                        typeArr.push([projectName + '_' + x.name + '_Input', Object.assign({}, ...values)]);
+                    }
+                }
+                //typeArr.push([projectName + '_' + x.name + '_Input', Object.assign({}, ...values)]);
+            }
+        }
+    }
+    return typeArr;
+}
+
 function getValuesFromAccount(account: IdlAccountItem | null): {
     [x: string]: string;
 }[] {
@@ -291,8 +391,31 @@ function getValuesFromAccount(account: IdlAccountItem | null): {
 }
 
 function getTypesForInstructionInputs(): Operations {
-    let projectName = config.projectName;
+    let projectName = convertPascal(config.projectName);
     let typeArr: Operations = [];
+
+    if (idlConfig.hasOwnProperty('types')) {
+        let idlTypes: IdlTypeDef[] = idlConfig.types;
+        let idlStructTypes = idlTypes.filter((x) => x.type.kind === 'struct');
+        for (let x of idlStructTypes) {
+            let name = convertPascal(projectName) + '_' + x.name;
+            if (typeIsUsedInInstructionInputs(x.name)) {
+                let values = x.type.fields.map((y: IdlField) => {
+                    let key = getKeyOrGQLTypeForIDLType(y.type);
+                    return {
+                        [y['name']]: key,
+                    };
+                });
+                if (values.length > 0) {
+                    const inputTypeForType = getInputTypeForType([name, Object.assign({}, ...values)]);
+                    if (!typeArr.find((t) => t[0] === inputTypeForType[0])) {
+                        typeArr.push(inputTypeForType);
+                    }
+                }
+            }
+        }
+    }
+
     if (idlConfig.hasOwnProperty('instructions')) {
         let idlInstructions: IdlInstruction[] = idlConfig.instructions;
         for (let instruction of idlInstructions) {
@@ -307,8 +430,13 @@ function getTypesForInstructionInputs(): Operations {
             let args = instruction.args;
             let argValues = args.map((y: IdlField) => {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
+                if (key === 'String' || key === 'Int' || key === 'BigInt' || key === 'Boolean') {
+                    return {
+                        [y['name']]: key,
+                    };
+                }
                 return {
-                    [y['name']]: key,
+                    [y['name']]: key + '_Input',
                 };
             });
 
@@ -321,9 +449,15 @@ function getTypesForInstructionInputs(): Operations {
 
 async function buildType(
     mapping: Operations,
-    options: { isQueryString?: boolean; isEnumString?: boolean; isInstructionString?: boolean } = {
+    options: {
+        isQueryString?: boolean;
+        isEnumString?: boolean;
+        isEnumInputString?: boolean;
+        isInstructionString?: boolean;
+    } = {
         isQueryString: false,
         isEnumString: false,
+        isEnumInputString: false,
         isInstructionString: false,
     },
 ): Promise<string> {
@@ -331,11 +465,9 @@ async function buildType(
         let stringType = mapping
             .filter((x) => Object.keys(x[1]).length > 0)
             .map((x) => {
-                let returnType = `\n${options.isInstructionString ? 'input' : 'type'} ${x[0]} ${JSON.stringify(
-                    x[1],
-                    null,
-                    4,
-                )} \n`.replace(/['",]+/g, '');
+                let returnType = `\n${options.isInstructionString || options.isEnumInputString ? 'input' : 'type'} ${
+                    x[0]
+                } ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
                 if (options.isQueryString) {
                     const tokenized = returnType.split('{');
                     returnType =
@@ -384,6 +516,7 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let account = getAccountTypes();
     let structTypes = getTypesForStructs();
     let enumTypes = getTypesForEnums();
+    let enumInputTypes = getTypeForEnumInputs();
     let instructionInputTypes = getTypesForInstructionInputs();
 
     let queryStr = await buildType(query, { isQueryString: true });
@@ -394,11 +527,13 @@ async function buildTypeDef(typeDefTemplateFile: string, typeDefOutputFile: stri
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
+    let enumInputTypesStr = await buildType(enumInputTypes, { isEnumInputString: true });
     let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
     let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
     } {\n\tmessage: String\n},`;
-    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType + instructionInputTypesStr;
+    let typesStr =
+        structTypesStr + enumTypesStr + additionalDataInfoType + instructionInputTypesStr + enumInputTypesStr;
 
     let typeDefs = queryStr + rootStr + mutationStr + mutationRootStr + accountRootStr + accountStr + typesStr;
 
