@@ -23,6 +23,7 @@ export const STRING_TYPES = ['bytes', 'string', 'publicKey'];
 export const INT_TYPES = ['u8', 'i8', 'u16', 'i16', 'i32'];
 
 /**
+ * @constant
  * Rust Types correspoding to GraphQL's BigInt type
  */
 export const BIG_INT_TYPES = ['u32', 'u64', 'i64', 'u128', 'i128'];

@@ -1,40 +1,9 @@
-import { Idl, OperationName, Operation, OperationType, OpertationReturnType } from '../types';
+import { Idl, Operation } from '../types';
 import { convertPascal, isSpecialEnum } from '../utils';
 import * as config from '../config.json';
 import { getEnumTypes } from '../types/index';
 import { readFile, writeFile } from 'fs/promises';
-
-export function generateFieldResolverForEnum(enumData: Operation, enumTypes: Operation[]): string {
-    const projectName = convertPascal(config.projectName);
-    const fieldResolver = `${enumData[0]}: {
-        name: async(parent) => {
-            return Object.keys(parent)[0].toLowerCase()
-        },
-        data: async(parent) => {
-            return Object.keys(parent[Object.keys(parent)[0]]).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this variant'}
-        }
-    },
-    `;
-
-    let unionTypeResolver = '';
-    let dataTypes = enumData[1]['data'].split('|');
-    if (dataTypes.length > 1) {
-        unionTypeResolver += `${enumData[0]}_Data: {\n\t\t__resolveType: (obj) => {`;
-        dataTypes.forEach((dataTypeName) => {
-            dataTypeName = dataTypeName.trim();
-            if (dataTypeName !== projectName + '_' + 'Data_Fields_Info') {
-                let additionalDataFieldTypes = Object.keys(enumTypes.filter((e) => e[0] === dataTypeName)[0][1]);
-                let propertiesWithObj = additionalDataFieldTypes.map((a) => `obj.${a}`);
-                unionTypeResolver += `\n\t\t\tif (${propertiesWithObj.join(
-                    ' && ',
-                )}) {\n\t\t\t\treturn "${dataTypeName}"\n\t\t\t}`;
-            }
-        });
-        unionTypeResolver += `\n\t\treturn "${projectName}_Data_Fields_Info";\n\t}\n},\n`;
-    }
-
-    return fieldResolver + unionTypeResolver;
-}
+import { getAccountRootTypes } from '../queries';
 
 export async function buildResolvers(
     idlConfig: Idl,
@@ -70,9 +39,67 @@ export async function buildResolvers(
         codeString = split[0].concat(split[2]);
         codeString = codeString.replace(/const eventParser = true/g, 'const eventParser = false');
     }
-    await writeFile(indexOutputFile, codeString);
 
+    const codeStringWithFilterFieldResolvers = await buildFilterFieldResolvers(idlConfig, codeString);
+    await writeFile(indexOutputFile, codeStringWithFilterFieldResolvers);
     await buildEnumFieldResolvers(indexOutputFile, idlConfig);
+}
+
+export async function buildFilterFieldResolvers(idlConfig: Idl, templateFileString: string): Promise<string> {
+    // The top level account resolvers are already taken care of by
+    // buildResolvers function. Need to generate for the accounts and rest here
+
+    // First build resolvers for account fields
+    let codeString = templateFileString;
+    let accountRoot = await getAccountRootTypes(idlConfig);
+    let split = templateFileString.split('///----------FIELD_RESOLVERS-FOR-FILTERS----------///');
+    if (accountRoot.some((a) => a.length > 2 && Object.keys(a[2]).length > 0)) {
+        for (let t of accountRoot) {
+            if (t.length > 2 && Object.keys(t[2]).length > 0) {
+                let result = split[1].replace(/__PROPERTY_NAME__/g, t[0]);
+                result = result.replace(/__FIELD_NAME__/g, 'account');
+                codeString = split[0].concat(result);
+                split[0] = split[0].concat(result);
+                const a = '';
+            }
+        }
+        codeString = codeString.concat(split[2]);
+    } else {
+        codeString = split[0].concat(split[2]);
+    }
+    return codeString;
+}
+
+export function generateFieldResolverForEnum(enumData: Operation, enumTypes: Operation[]): string {
+    const projectName = convertPascal(config.projectName);
+    const fieldResolver = `${enumData[0]}: {
+        name: async(parent) => {
+            return Object.keys(parent)[0].toLowerCase()
+        },
+        data: async(parent) => {
+            return Object.keys(parent[Object.keys(parent)[0]]).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this variant'}
+        }
+    },
+    `;
+
+    let unionTypeResolver = '';
+    let dataTypes = enumData[1]['data'].split('|');
+    if (dataTypes.length > 1) {
+        unionTypeResolver += `${enumData[0]}_Data: {\n\t\t__resolveType: (obj) => {`;
+        dataTypes.forEach((dataTypeName) => {
+            dataTypeName = dataTypeName.trim();
+            if (dataTypeName !== projectName + '_' + 'Data_Fields_Info') {
+                let additionalDataFieldTypes = Object.keys(enumTypes.filter((e) => e[0] === dataTypeName)[0][1]);
+                let propertiesWithObj = additionalDataFieldTypes.map((a) => `obj.${a}`);
+                unionTypeResolver += `\n\t\t\tif (${propertiesWithObj.join(
+                    ' && ',
+                )}) {\n\t\t\t\treturn "${dataTypeName}"\n\t\t\t}`;
+            }
+        });
+        unionTypeResolver += `\n\t\treturn "${projectName}_Data_Fields_Info";\n\t}\n},\n`;
+    }
+
+    return fieldResolver + unionTypeResolver;
 }
 
 export async function buildEnumFieldResolvers(indexOutputFile: string, idlConfig: Idl): Promise<void> {

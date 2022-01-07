@@ -92,8 +92,19 @@ const resolvers = {
     },
     __ROOTNAME__: {
         ///----------ACCOUNT_RESOLVERS----------///
-        __ACCOUNTNAME__: async (_, data) => {
-            return await getAccountData('__ANCHORACCOUNTNAME__', data['id']);
+        __ACCOUNTNAME__: async (parent, args) => {
+            let data = await getAccountData('__ANCHORACCOUNTNAME__', args['publicKey']);
+            if (args?.where?.publicKey?.eq === undefined && args?.where?.publicKey?.neq === undefined) {
+                return data;
+            }
+            if (args?.where?.publicKey?.eq !== undefined) {
+                data = data.filter((d) => args.where.publicKey.eq === d.publicKey);
+            }
+
+            if (args?.where?.publicKey?.neq !== undefined) {
+                data = data.filter((d) => args.where.publicKey.neq !== d.publicKey);
+            }
+            return data;
         },
         ///----------ACCOUNT_RESOLVERS----------///
 
@@ -110,6 +121,39 @@ const resolvers = {
             };
         },
     },
+    ///----------FIELD_RESOLVERS-FOR-FILTERS----------///
+
+    __PROPERTY_NAME__: {
+        __FIELD_NAME__: async (parent, args, context, info) => {
+            if (args.where) {
+                let returnData = parent;
+                const filters = args.where;
+                for (let field of Object.keys(filters)) {
+                    const filtersForField = Object.keys(filters[field]);
+                    for (let filter of filtersForField) {
+                        const filterValueToCompare = filters[field][filter];
+                        if (returnData.account && field in returnData.account) {
+                            // not putting tripple eq and neq for BigInt and Int.
+                            if (filter === 'eq') {
+                                returnData = returnData.account[field] == filterValueToCompare ? parent : {};
+                            } else if (filter === 'neq') {
+                                returnData = returnData.account[field] != filterValueToCompare ? parent : {};
+                            } else if (filter === 'gt') {
+                                returnData = returnData.account[field] > filterValueToCompare ? parent : {};
+                            } else if (filter === 'lt') {
+                                returnData = returnData.account[field] < filterValueToCompare ? parent : {};
+                            }
+                        }
+                    }
+                }
+                return returnData.account;
+            }
+            return parent.account;
+        },
+    },
+
+    ///----------FIELD_RESOLVERS-FOR-FILTERS----------///
+
     ///----------ENUM_FIELD_RESOLVERS----------///
 
     ///----------ENUM_FIELD_RESOLVERS----------///

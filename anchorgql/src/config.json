@@ -1,8 +1,8 @@
 {
-    "projectName": "jet_jet_devnet",
+    "projectName": "jet_jet_mainnet",
     "protocol": "jet",
     "network": "mainnet",
-    "programID": "1349iiGjWC7ZTbu6otFmJwztms122jEEnShKgpVnNewy",
+    "programID": "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU",
     "anchorProviderURL": "https://api.mainnet-beta.solana.com",
     "idlPath": "./src/idls/jet.json",
     "anchorVersion": "0.14.0",
