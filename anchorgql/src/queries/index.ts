@@ -56,13 +56,13 @@ export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> 
             const filters = getFiltersForIDLType(x.type);
             let argString = '';
             if (filters.length > 0) {
-                argString = `(where: ${name + '_Filters'})`;
+                argString = `(where: ${name + '_Account_Filters'})`;
             }
             let fields = {
                 publicKey: 'String',
                 ['account' + argString]: convertPascal(projectName) + '_' + x.name + 'Account',
             };
-            return [name, fields, Object.assign({}, ...filters)];
+            return [name, fields, { [name + '_Account_Filters']: Object.assign({}, ...filters) }];
         });
         return mapping;
     } else {
@@ -97,13 +97,19 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
                     '[' + convertPascal(projectName) + '_' + x.name + ']',
             };
             accountNames.push(accountName);
-            accountArgs.push([{ publicKey: String }]);
+            const filterName = `${convertPascal(projectName) + '_' + x.name}_Filters`;
+            accountArgs.push({ [filterName]: { publicKey: 'String' } });
         });
 
         accountNames.push({ config: 'Config' });
         // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
-
-        return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
+        return [
+            [
+                projectName.charAt(0).toUpperCase() + projectName.slice(1),
+                Object.assign({}, ...accountNames),
+                Object.assign({}, ...accountArgs),
+            ],
+        ];
     } else {
         accountNames.push({ config: 'Config' });
         // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;

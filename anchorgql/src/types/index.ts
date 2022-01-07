@@ -1,89 +1,13 @@
 import { camelCase } from 'lodash';
 import * as config from '../config.json';
 import { Idl, IdlField, IdlType, IdlTypeDef, Operation } from '../types';
-import {
-    convertPascal,
-    getFiltersForIDLType,
-    getGqlTypeForIdlScalarType,
-    getKeyForIdlObjectType,
-    getKeyOrGQLTypeForIDLType,
-} from '../utils';
+import { convertPascal, getGqlTypeForIdlScalarType, getKeyForIdlObjectType, getKeyOrGQLTypeForIDLType } from '../utils';
 
-export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
-    const projectName = config.projectName;
-    try {
-        if ('accounts' in idlConfig) {
-            let mapping: Operation[] = idlConfig.accounts.map((x: IdlTypeDef) => {
-                let name = convertPascal(projectName) + '_' + x.name + 'Account';
-                let fields = x.type.fields.map((y) => {
-                    let key: string;
-                    // if (typeof y.type === "string" || y.type instanceof String) {
-                    //   key = "String";
-                    // } else
-                    if (y.type instanceof Object) {
-                        key = getKeyForIdlObjectType(y.type);
-                    } else {
-                        //TODO: add checks for other types here
-                        key = getGqlTypeForIdlScalarType(y.type);
-                    }
-                    return {
-                        [y['name']]: key,
-                    };
-                });
-                return [name, Object.assign({}, ...fields)];
-            });
-            return mapping;
-        } else {
-            return [];
-        }
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> {
-    let projectName = config.projectName;
-    if ('accounts' in idlConfig) {
-        let mapping: Operation[] = idlConfig.accounts.map((x: IdlTypeDef) => {
-            let name = convertPascal(projectName) + '_' + x.name;
-            let fields = {
-                publicKey: 'String',
-                account: convertPascal(projectName) + '_' + x.name + 'Account',
-            };
-            return [name, fields];
-        });
-        return mapping;
-    } else {
-        return [];
-    }
-}
-
-export async function getQueryType(): Promise<Operation[]> {
-    const projectName = config.projectName;
-    let subgraph = 'program_' + projectName;
-    return [['Query', { [subgraph]: convertPascal(projectName) }]];
-}
-
-export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
-    let projectName = config.projectName;
-    let accountNames = [];
-
-    if ('accounts' in idlConfig) {
-        accountNames = idlConfig.accounts.map((x: IdlTypeDef) => {
-            return {
-                [projectName + '_' + x.name + ' (id: String)']: '[' + convertPascal(projectName) + '_' + x.name + ']',
-            };
-        });
-        accountNames.push({ config: 'Config' });
-        // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
-        return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
-    } else {
-        accountNames.push({ config: 'Config' });
-        // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
-        return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
-    }
-}
-
+/**
+ * Get types for all struct types in the IDL
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns The fields for all the struct types in the IDL in the {@link Operation} type
+ */
 export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
     let typeArr: Operation[] = [];
@@ -99,9 +23,9 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
                     [y['name']]: key,
                 };
             });
-            let filters = getFiltersForIDLType(x.type);
+            //let filters = getFiltersForIDLType(x.type);
             if (values.length > 0) {
-                typeArr.push([name, Object.assign({}, ...values), Object.assign({}, ...filters)]);
+                typeArr.push([name, Object.assign({}, ...values)]);
             }
         }
     }
@@ -110,6 +34,14 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
 
 //#region Enums
 
+/**
+ * Get types for all enum types in the IDL. Enum types are special types to accomodate
+ * the possibility of enum types containing fields in them in Rust. This is a
+ * special type which contains an enum for all the variants and a union type for fields
+ * on each of the variant.
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns The types for all the enum types in the IDL in the {@link Operation} type
+ */
 export async function getEnumTypes(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
     let typeArr: Operation[] = [];

@@ -6,15 +6,16 @@ export type OperationType = string & {};
 
 export type ArgName = string & {};
 
-export type ArgType = string & {};
+export type Name = string & {};
 
-export type OperationArguments = Record<ArgName, ArgType>;
+export type Type = string & {};
 
-//TODO: Simplify this
+export type OperationArguments = Record<Name, Type>;
+
 export type Operation = [
     type: OperationType,
     options: Record<OperationName, OpertationReturnType>,
-    args?: OperationArguments,
+    args?: Record<string, OperationArguments>,
 ];
 
 //#region IDL Types

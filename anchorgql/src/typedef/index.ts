@@ -64,20 +64,39 @@ async function buildType(
                 const projectName = config.projectName;
                 // Generate input for filters
                 if (x.length === 3 && Object.keys(x[2]).length > 0) {
-                    returnType += '\ninput ' + x[0] + '_Filters {';
-                    for (let f of Object.keys(x[2])) {
-                        let fType = x[2][f];
-                        if (fType === 'String') {
-                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
-                        } else if (fType === 'Int') {
-                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
-                        } else if (fType === 'BigInt') {
-                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
-                        } else if (fType === 'Boolean') {
-                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                    // First going through the main list of filters
+                    for (let k of Object.keys(x[2])) {
+                        returnType += '\ninput ' + k + ' {';
+                        // For that filters, these are the properties which can be filtered
+                        for (let f of Object.keys(x[2][k])) {
+                            let fType = x[2][k][f];
+                            if (fType === 'String') {
+                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
+                            } else if (fType === 'Int') {
+                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
+                            } else if (fType === 'BigInt') {
+                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
+                            } else if (fType === 'Boolean') {
+                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                            }
                         }
+                        returnType += '\n} \n';
                     }
-                    returnType += '\n} \n';
+
+                    // returnType += '\ninput ' + x[2] + '_Filters {';
+                    // for (let f of Object.keys(x[2])) {
+                    //     let fType = x[2][f];
+                    // if (fType === 'String') {
+                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
+                    // } else if (fType === 'Int') {
+                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
+                    // } else if (fType === 'BigInt') {
+                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
+                    // } else if (fType === 'Boolean') {
+                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                    // }
+                    // }
+                    // returnType += '\n} \n';
                 }
 
                 return returnType;
