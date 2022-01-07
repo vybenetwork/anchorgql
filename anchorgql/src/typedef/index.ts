@@ -1,28 +1,37 @@
 import { Idl, Operation } from '../types';
-import { getAccountRootTypes, getAccountTypes, getQueryType, getRootType } from '../queries';
+import { getAccountRootTypes, getAccountTypes, getFilterInputs, getQueryType, getRootType } from '../queries';
 import { getEnumTypes, getStructTypes } from '../types/index';
 import * as config from '../config.json';
 import { convertPascal, isSpecialEnum } from '../utils';
 import { readFile, writeFile } from 'fs/promises';
-import { buildEnumFieldResolvers } from '../resolvers';
 
+/**
+ * Get an SDL compitable GraphQL Type/Input from the {@link Operation} type
+ * @param mapping A list of types to convert from {@link Operations} type to an SDL compitable GraphQL type
+ * @param options Additional options to control the type generated. The generated type will vary according to provided options.
+ * @returns A GraphQL SDL compitable type in a string
+ */
 async function buildType(
     mapping: Operation[],
-    options: { isQueryString?: boolean; isEnumString?: boolean; isInstructionString?: boolean } = {
+    options: {
+        isQueryString?: boolean;
+        isEnumString?: boolean;
+        isInstructionString?: boolean;
+        isInputString?: boolean;
+    } = {
         isQueryString: false,
         isEnumString: false,
         isInstructionString: false,
+        isInputString: false,
     },
 ): Promise<string> {
     if (mapping.length !== 0) {
         let stringType = mapping
             .filter((x) => Object.keys(x[1]).length > 0)
             .map((x) => {
-                let returnType = `\n${options.isInstructionString ? 'input' : 'type'} ${x[0]} ${JSON.stringify(
-                    x[1],
-                    null,
-                    4,
-                )} \n`.replace(/['",]+/g, '');
+                let returnType = `\n${options.isInstructionString || options.isInputString ? 'input' : 'type'} ${
+                    x[0]
+                } ${JSON.stringify(x[1], null, 4)} \n`.replace(/['",]+/g, '');
                 if (options.isQueryString) {
                     const tokenized = returnType.split('{');
                     returnType =
@@ -52,6 +61,24 @@ async function buildType(
                         returnType += enumString;
                     }
                 }
+                const projectName = config.projectName;
+                // Generate input for filters
+                if (x.length === 3 && Object.keys(x[2]).length > 0) {
+                    returnType += '\ninput ' + x[0] + '_Filters {';
+                    for (let f of Object.keys(x[2])) {
+                        let fType = x[2][f];
+                        if (fType === 'String') {
+                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
+                        } else if (fType === 'Int') {
+                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
+                        } else if (fType === 'BigInt') {
+                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
+                        } else if (fType === 'Boolean') {
+                            returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                        }
+                    }
+                    returnType += '\n} \n';
+                }
 
                 return returnType;
             });
@@ -62,12 +89,19 @@ async function buildType(
     }
 }
 
+/**
+ * A helper function to generate the GraphQL typedef file. It combines various methods from different modules to generate the SDL.
+ * @param idlConfig The IDL File for the Smart Contract
+ * @param typeDefTemplateFile Path to where the template file for typedefs is stored
+ * @param typeDefOutputFile Path to where the output typedef file will be copied to
+ */
 export async function buildTypeDef(
     idlConfig: Idl,
     typeDefTemplateFile: string,
     typeDefOutputFile: string,
 ): Promise<void> {
     // First get all the types
+    let filterInputs = getFilterInputs();
     let query = await getQueryType();
     let root = await getRootType(idlConfig);
     let accountRoot = await getAccountRootTypes(idlConfig);
@@ -76,6 +110,7 @@ export async function buildTypeDef(
     let enumTypes = await getEnumTypes(idlConfig);
 
     // Process the types to create valid gql strings
+    let filterInputsStr = await buildType(filterInputs, { isInputString: true });
     let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
     let accountRootStr = await buildType(accountRoot);
@@ -88,7 +123,7 @@ export async function buildTypeDef(
     } {\n\tmessage: String\n},`;
     let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
 
-    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr;
+    let typeDefs = filterInputsStr + queryStr + rootStr + accountRootStr + accountStr + typesStr;
 
     let data = await readFile(typeDefTemplateFile, 'utf8');
     const split = data.split('///--------------------///');

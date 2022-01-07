@@ -4,7 +4,11 @@ export type OpertationReturnType = string & {};
 
 export type OperationType = string & {};
 
-export type OperationArguments = string & {};
+export type ArgName = string & {};
+
+export type ArgType = string & {};
+
+export type OperationArguments = Record<ArgName, ArgType>;
 
 //TODO: Simplify this
 export type Operation = [
@@ -74,7 +78,7 @@ export type IdlTypeDef = {
     type: IdlTypeDefTy;
 };
 
-type IdlTypeDefTy = {
+export type IdlTypeDefTy = {
     kind: 'struct' | 'enum';
     fields?: IdlTypeDefStruct;
     variants?: IdlEnumVariant[];

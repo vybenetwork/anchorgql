@@ -1,7 +1,13 @@
 import { camelCase } from 'lodash';
 import * as config from '../config.json';
 import { Idl, IdlField, IdlType, IdlTypeDef, Operation } from '../types';
-import { convertPascal, getGqlTypeForIdlScalarType, getKeyForIdlObjectType, getKeyOrGQLTypeForIDLType } from '../utils';
+import {
+    convertPascal,
+    getFiltersForIDLType,
+    getGqlTypeForIdlScalarType,
+    getKeyForIdlObjectType,
+    getKeyOrGQLTypeForIDLType,
+} from '../utils';
 
 export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
     const projectName = config.projectName;
@@ -93,8 +99,9 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
                     [y['name']]: key,
                 };
             });
+            let filters = getFiltersForIDLType(x.type);
             if (values.length > 0) {
-                typeArr.push([name, Object.assign({}, ...values)]);
+                typeArr.push([name, Object.assign({}, ...values), Object.assign({}, ...filters)]);
             }
         }
     }
