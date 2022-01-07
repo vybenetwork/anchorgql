@@ -102,7 +102,10 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
         });
 
         accountNames.push({ config: 'Config' });
-        // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
+        const transactionsFilterName = projectName + '_Transactions(limit: Int)';
+        accountNames.push({
+            [transactionsFilterName]: '[JSON]',
+        });
         return [
             [
                 projectName.charAt(0).toUpperCase() + projectName.slice(1),
@@ -112,7 +115,6 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
         ];
     } else {
         accountNames.push({ config: 'Config' });
-        // 'events' in idlConfig ? accountNames.push({ events: 'JSON' }) : null;
         return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
     }
 }

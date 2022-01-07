@@ -32,13 +32,8 @@ export async function buildResolvers(
         codeString = codeString.concat(split[2]);
     }
 
-    split = codeString.split('///----------EVENT_RESOLVER----------///');
-    if ('events' in idlConfig) {
-        codeString = split[0].concat(split[1]).concat(split[2]);
-    } else {
-        codeString = split[0].concat(split[2]);
-        codeString = codeString.replace(/const eventParser = true/g, 'const eventParser = false');
-    }
+    // replace transaction filter name
+    codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
 
     const codeStringWithFilterFieldResolvers = await buildFilterFieldResolvers(idlConfig, codeString);
     await writeFile(indexOutputFile, codeStringWithFilterFieldResolvers);
