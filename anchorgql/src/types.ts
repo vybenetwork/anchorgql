@@ -12,11 +12,7 @@ export type Type = string & {};
 
 export type OperationArguments = Record<Name, Type>;
 
-export type Operation = [
-    type: OperationType,
-    options: Record<OperationName, OpertationReturnType>,
-    args?: Record<string, OperationArguments>,
-];
+export type Operation = [type: OperationType, options: Record<OperationName, OpertationReturnType>];
 
 //#region IDL Types
 

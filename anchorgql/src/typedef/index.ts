@@ -1,9 +1,10 @@
 import { Idl, Operation } from '../types';
-import { getAccountRootTypes, getAccountTypes, getFilterInputs, getQueryType, getRootType } from '../queries';
+import { getAccountRootTypes, getAccountTypes, getQueryType, getRootType } from '../queries';
 import { getEnumTypes, getStructTypes } from '../types/index';
 import * as config from '../config.json';
 import { convertPascal, isSpecialEnum } from '../utils';
 import { readFile, writeFile } from 'fs/promises';
+import { getFilterInputsForBaseTypes, getAccountFilterTypes } from '../filters';
 
 /**
  * Get an SDL compitable GraphQL Type/Input from the {@link Operation} type
@@ -61,43 +62,28 @@ async function buildType(
                         returnType += enumString;
                     }
                 }
-                const projectName = config.projectName;
+                // const projectName = config.projectName;
                 // Generate input for filters
-                if (x.length === 3 && Object.keys(x[2]).length > 0) {
-                    // First going through the main list of filters
-                    for (let k of Object.keys(x[2])) {
-                        returnType += '\ninput ' + k + ' {';
-                        // For that filters, these are the properties which can be filtered
-                        for (let f of Object.keys(x[2][k])) {
-                            let fType = x[2][k][f];
-                            if (fType === 'String') {
-                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
-                            } else if (fType === 'Int') {
-                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
-                            } else if (fType === 'BigInt') {
-                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
-                            } else if (fType === 'Boolean') {
-                                returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
-                            }
-                        }
-                        returnType += '\n} \n';
-                    }
-
-                    // returnType += '\ninput ' + x[2] + '_Filters {';
-                    // for (let f of Object.keys(x[2])) {
-                    //     let fType = x[2][f];
-                    // if (fType === 'String') {
-                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
-                    // } else if (fType === 'Int') {
-                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
-                    // } else if (fType === 'BigInt') {
-                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
-                    // } else if (fType === 'Boolean') {
-                    //     returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
-                    // }
-                    // }
-                    // returnType += '\n} \n';
-                }
+                // if (x.length === 3 && Object.keys(x[2]).length > 0) {
+                //     // First going through the main list of filters
+                //     for (let k of Object.keys(x[2])) {
+                //         returnType += '\ninput ' + k + ' {';
+                //         // For that filters, these are the properties which can be filtered
+                //         for (let f of Object.keys(x[2][k])) {
+                //             let fType = x[2][k][f];
+                //             if (fType === 'String') {
+                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
+                //             } else if (fType === 'Int') {
+                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
+                //             } else if (fType === 'BigInt') {
+                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
+                //             } else if (fType === 'Boolean') {
+                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                //             }
+                //         }
+                //         returnType += '\n} \n';
+                //     }
+                // }
 
                 return returnType;
             });
@@ -120,7 +106,7 @@ export async function buildTypeDef(
     typeDefOutputFile: string,
 ): Promise<void> {
     // First get all the types
-    let filterInputs = getFilterInputs();
+    //let filterInputs = getFilterInputsForBaseTypes()
     let query = await getQueryType();
     let root = await getRootType(idlConfig);
     let accountRoot = await getAccountRootTypes(idlConfig);
@@ -128,21 +114,27 @@ export async function buildTypeDef(
     let structTypes = await getStructTypes(idlConfig);
     let enumTypes = await getEnumTypes(idlConfig);
 
+    // Types for filters
+    let baseInputFilters = getFilterInputsForBaseTypes();
+    let accountFilterTypes = getAccountFilterTypes(idlConfig);
+
     // Process the types to create valid gql strings
-    let filterInputsStr = await buildType(filterInputs, { isInputString: true });
     let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
     let accountRootStr = await buildType(accountRoot);
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
-    //let instructionInputTypesStr = await buildType(instructionInputTypes, { isInstructionString: true });
     let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
     } {\n\tmessage: String\n},`;
     let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
 
-    let typeDefs = filterInputsStr + queryStr + rootStr + accountRootStr + accountStr + typesStr;
+    let baseFilterInputsStr = await buildType(baseInputFilters, { isInputString: true });
+    let accountFilterInputsStr = await buildType(accountFilterTypes, { isInputString: true });
+    let filtersStr = baseFilterInputsStr + accountFilterInputsStr;
+
+    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr + filtersStr;
 
     let data = await readFile(typeDefTemplateFile, 'utf8');
     const split = data.split('///--------------------///');

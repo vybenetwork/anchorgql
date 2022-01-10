@@ -35,8 +35,8 @@ export async function buildResolvers(
     // replace transaction filter name
     codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
 
-    const codeStringWithFilterFieldResolvers = await buildFilterFieldResolvers(idlConfig, codeString);
-    await writeFile(indexOutputFile, codeStringWithFilterFieldResolvers);
+    //const codeStringWithFilterFieldResolvers = await buildFilterFieldResolvers(idlConfig, codeString);
+    await writeFile(indexOutputFile, codeString);
     await buildEnumFieldResolvers(indexOutputFile, idlConfig);
 }
 
@@ -48,20 +48,20 @@ export async function buildFilterFieldResolvers(idlConfig: Idl, templateFileStri
     let codeString = templateFileString;
     let accountRoot = await getAccountRootTypes(idlConfig);
     let split = templateFileString.split('///----------FIELD_RESOLVERS-FOR-FILTERS----------///');
-    if (accountRoot.some((a) => a.length > 2 && Object.keys(a[2]).length > 0)) {
-        for (let t of accountRoot) {
-            if (t.length > 2 && Object.keys(t[2]).length > 0) {
-                let result = split[1].replace(/__PROPERTY_NAME__/g, t[0]);
-                result = result.replace(/__FIELD_NAME__/g, 'account');
-                codeString = split[0].concat(result);
-                split[0] = split[0].concat(result);
-                const a = '';
-            }
-        }
-        codeString = codeString.concat(split[2]);
-    } else {
-        codeString = split[0].concat(split[2]);
-    }
+    // if (accountRoot.some((a) => a.length > 2 && Object.keys(a[2]).length > 0)) {
+    //     for (let t of accountRoot) {
+    //         if (t.length > 2 && Object.keys(t[2]).length > 0) {
+    //             let result = split[1].replace(/__PROPERTY_NAME__/g, t[0]);
+    //             result = result.replace(/__FIELD_NAME__/g, 'account');
+    //             codeString = split[0].concat(result);
+    //             split[0] = split[0].concat(result);
+    //             const a = '';
+    //         }
+    //     }
+    //     codeString = codeString.concat(split[2]);
+    // } else {
+    //     codeString = split[0].concat(split[2]);
+    // }
     return codeString;
 }
 

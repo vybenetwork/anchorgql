@@ -1,10 +1,10 @@
 {
-    "projectName": "jet_jet_mainnet",
+    "projectName": "asol_asol_mainnet",
     "protocol": "jet",
     "network": "mainnet",
     "programID": "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU",
     "anchorProviderURL": "https://api.mainnet-beta.solana.com",
-    "idlPath": "./src/idls/jet.json",
+    "idlPath": "./src/idls/asol.json",
     "anchorVersion": "0.14.0",
     "idl": null,
     "port": 51305,
