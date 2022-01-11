@@ -168,6 +168,14 @@
             "PROGRAM_ID": "8NifqfdS52EsNwGMvMEJTM4YjjZY8AJipJ1V9MB7ngdo",
             "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
             "IDL_PATH": "./src/idls/vault.json"
+        },
+        {
+            "PROJECT_NAME": "drift_vault_mainnet",
+            "PROTOCOL": "drift",
+            "NETWORK": "mainnet",
+            "PROGRAM_ID": "dammHkt7jmytvbS3nHTxQNEcP59aE57nxwV21YdqEDN",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/drift.json"
         }
     ]
 }
