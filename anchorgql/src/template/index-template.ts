@@ -135,13 +135,13 @@ const resolvers = {
             let sigatures = await provider.connection.getSignaturesForAddress(
                 programId,
                 {
-                    limit: args?.limit ? Math.max(args.limit, 25) : 10,
+                    limit: args?.limit ? Math.min(args.limit, 25) : 10,
                 },
                 'finalized',
             );
 
             if (args?.limit) {
-                sigatures = sigatures.slice(0, args.limit);
+                sigatures = sigatures.slice(0, Math.min(args.limit, 25));
             }
             const transactions = await Promise.all(
                 sigatures.map((s) => {
