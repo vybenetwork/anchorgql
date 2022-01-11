@@ -45,11 +45,10 @@ export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> 
     if ('accounts' in idlConfig) {
         let mapping: Operation[] = idlConfig.accounts.map((x: IdlTypeDef) => {
             let name = convertPascal(projectName) + '_' + x.name;
-            let argString = `(where: ${name + '_Filters'})`;
 
             let fields = {
                 publicKey: 'String',
-                ['account' + argString]: convertPascal(projectName) + '_' + x.name + 'Account',
+                account: convertPascal(projectName) + '_' + x.name + 'Account',
             };
             return [name, fields];
         });

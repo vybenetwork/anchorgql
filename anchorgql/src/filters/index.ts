@@ -130,6 +130,15 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                         },
                     ]);
                 }
+                // If no filter was found for the account, then only generate one for it's public key
+                else {
+                    filters.push([
+                        convertPascal(projectName) + '_' + account.name + '_Filters',
+                        {
+                            publicKey: 'String',
+                        },
+                    ]);
+                }
             }
         }
     }
