@@ -3,8 +3,15 @@ import { convertPascal, isSpecialEnum } from '../utils';
 import * as config from '../config.json';
 import { getEnumTypes } from '../types/index';
 import { readFile, writeFile } from 'fs/promises';
-import { getAccountRootTypes } from '../queries';
 
+/**
+ * The method builds resolvers for accounts and enums. It expects certain
+ * piece of code in template file to be in fixed places. Edit the template file
+ * with caution as it may break this method.
+ * @param indexTemplateFile Path to the template file for index.ts
+ * @param indexOutputFile Path to the index.tsx file in the generated server
+ * @param idlConfig The IDL File for the Smart Contract
+ */
 export async function buildResolvers(
     idlConfig: Idl,
     indexTemplateFile: string,
@@ -34,37 +41,17 @@ export async function buildResolvers(
 
     // replace transaction filter name
     codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
-
-    //const codeStringWithFilterFieldResolvers = await buildFilterFieldResolvers(idlConfig, codeString);
     await writeFile(indexOutputFile, codeString);
     await buildEnumFieldResolvers(indexOutputFile, idlConfig);
 }
 
-export async function buildFilterFieldResolvers(idlConfig: Idl, templateFileString: string): Promise<string> {
-    // The top level account resolvers are already taken care of by
-    // buildResolvers function. Need to generate for the accounts and rest here
-
-    // First build resolvers for account fields
-    let codeString = templateFileString;
-    let accountRoot = await getAccountRootTypes(idlConfig);
-    let split = templateFileString.split('///----------FIELD_RESOLVERS-FOR-FILTERS----------///');
-    // if (accountRoot.some((a) => a.length > 2 && Object.keys(a[2]).length > 0)) {
-    //     for (let t of accountRoot) {
-    //         if (t.length > 2 && Object.keys(t[2]).length > 0) {
-    //             let result = split[1].replace(/__PROPERTY_NAME__/g, t[0]);
-    //             result = result.replace(/__FIELD_NAME__/g, 'account');
-    //             codeString = split[0].concat(result);
-    //             split[0] = split[0].concat(result);
-    //             const a = '';
-    //         }
-    //     }
-    //     codeString = codeString.concat(split[2]);
-    // } else {
-    //     codeString = split[0].concat(split[2]);
-    // }
-    return codeString;
-}
-
+/**
+ * The method creates a valid GraphQL type for an enum passed in the {@link Operation} format.
+ * For the names of enums, their values are lowercased
+ * @param enumData The enum to convert to it's GraphQL type in {@link Operation} format
+ * @param enumTypes All the enums types generated using the {@link getEnumTypes} method
+ * @returns A valid GraphQL type for the enum passed in {@link Operation} format
+ */
 export function generateFieldResolverForEnum(enumData: Operation, enumTypes: Operation[]): string {
     const projectName = convertPascal(config.projectName);
     const fieldResolver = `${enumData[0]}: {
@@ -97,6 +84,15 @@ export function generateFieldResolverForEnum(enumData: Operation, enumTypes: Ope
     return fieldResolver + unionTypeResolver;
 }
 
+/**
+ * Enums require special field resolvers to generate for their queries. This method generates
+ * those resolvers. It uses the {@link generateFieldResolverForEnum} to generate field
+ * resolvers for each of the enum. The generated resolvers are then written to a file.
+ * Please note that this method expects the template for index.ts file to have certain code
+ * in fixed places. Edit the template with caution as it may break this method.
+ * @param indexOutputFile Path to the index.tsx file in the generated server
+ * @param idlConfig The IDL File for the Smart Contract
+ */
 export async function buildEnumFieldResolvers(indexOutputFile: string, idlConfig: Idl): Promise<void> {
     const enumFieldResolverString = '///----------ENUM_FIELD_RESOLVERS----------///';
     let allEnumTypes = await getEnumTypes(idlConfig);

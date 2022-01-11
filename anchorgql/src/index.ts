@@ -3,11 +3,22 @@ import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
 import { buildTypeDef } from './typedef';
 import { buildResolvers } from './resolvers';
 
+/**
+ * The method creates a folder for the server to generate
+ * and a folder where the idl of the generated server will
+ * be stored into.
+ * @param path Path to where to create the directories
+ */
 async function makeDirs(path: string) {
     await mkdir(path, { recursive: true });
     await mkdir(path + '/src/idls', { recursive: true });
 }
 
+/**
+ * The method copies templates and a bunch of files to create
+ * an Apollo Server project.
+ * @param path The path to where to copy the files to
+ */
 async function copyFiles(path: string) {
     await copyFile('./src/template/package-template.json', path + '/package.json');
     let data = await readFile(path + `/package.json`, 'utf8');
