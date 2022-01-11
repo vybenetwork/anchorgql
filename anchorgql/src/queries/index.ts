@@ -80,7 +80,10 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
     if ('accounts' in idlConfig) {
         idlConfig.accounts.map((x: IdlTypeDef) => {
             let accountName = {
-                [projectName + '_' + x.name + `(where: ${convertPascal(projectName) + '_' + x.name}_Filters)`]:
+                [projectName +
+                '_' +
+                x.name +
+                `(where: ${convertPascal(projectName) + '_' + x.name}_Filters limit: Int)`]:
                     '[' + convertPascal(projectName) + '_' + x.name + ']',
             };
             accountNames.push(accountName);
