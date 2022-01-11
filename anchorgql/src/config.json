@@ -1,8 +1,8 @@
 {
     "projectName": "asol_asol_mainnet",
-    "protocol": "jet",
+    "protocol": "asol",
     "network": "mainnet",
-    "programID": "JPv1rCqrhagNNmJVM5J1he7msQ5ybtvE1nNuHpDHMNU",
+    "programID": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE",
     "anchorProviderURL": "https://api.mainnet-beta.solana.com",
     "idlPath": "./src/idls/asol.json",
     "anchorVersion": "0.14.0",

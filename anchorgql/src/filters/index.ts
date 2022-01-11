@@ -45,6 +45,14 @@ export function getFilterInputsForBaseTypes(): Operation[] {
     return [stringFilter, intFilter, bigIntFilter, booleanFilter];
 }
 
+/**
+ * Get the all the inputs required for to generate a filter for an object type. It
+ * recursively finds all the object types in the fields of an object type and creates
+ * a type for each nested object type
+ * @param idlType The type for which filter inputs are to be generated
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns Inputs for nested filters in {@link Operation} format
+ */
 function getFilterInputsForObjectType(idlType: IdlType, idlConfig: Idl): Operation[] {
     let objectTypes = [];
     if (typeof idlType === 'object' && 'defined' in idlType) {
@@ -64,6 +72,11 @@ function getFilterInputsForObjectType(idlType: IdlType, idlConfig: Idl): Operati
     return objectTypes;
 }
 
+/**
+ * Get filters for all accounts for the channel
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns Filters for all accounts on the channel in {@link Operation} format
+ */
 export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
     let projectName = config.projectName;
     const accounts = idlConfig.accounts;
@@ -103,10 +116,20 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                         }
                     }
                 }
-                filters.push([
-                    convertPascal(projectName) + '_' + account.name + '_Filters',
-                    Object.assign({}, ...fields),
-                ]);
+                if (fields.length > 0) {
+                    filters.push([
+                        convertPascal(projectName) + '_' + account.name + '_Account_Filters',
+                        Object.assign({}, ...fields),
+                    ]);
+
+                    filters.push([
+                        convertPascal(projectName) + '_' + account.name + '_Filters',
+                        {
+                            publicKey: 'String',
+                            account: convertPascal(projectName) + '_' + account.name + '_Account_Filters',
+                        },
+                    ]);
+                }
             }
         }
     }

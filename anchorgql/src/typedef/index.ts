@@ -41,7 +41,6 @@ async function buildType(
                         `\n\t"""\n\t{"programID": "${config.programID}", "protocol": "${config.protocol}", "projectName": "${config.projectName}", "network": "${config.network}"}\n\t"""` +
                         tokenized[1];
                 }
-
                 // generate the additional union type for special enum type
                 if (options.isEnumString) {
                     if (isSpecialEnum(x)) {
@@ -62,29 +61,6 @@ async function buildType(
                         returnType += enumString;
                     }
                 }
-                // const projectName = config.projectName;
-                // Generate input for filters
-                // if (x.length === 3 && Object.keys(x[2]).length > 0) {
-                //     // First going through the main list of filters
-                //     for (let k of Object.keys(x[2])) {
-                //         returnType += '\ninput ' + k + ' {';
-                //         // For that filters, these are the properties which can be filtered
-                //         for (let f of Object.keys(x[2][k])) {
-                //             let fType = x[2][k][f];
-                //             if (fType === 'String') {
-                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_String_Filters';
-                //             } else if (fType === 'Int') {
-                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Int_Filters';
-                //             } else if (fType === 'BigInt') {
-                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_BigInt_Filters';
-                //             } else if (fType === 'Boolean') {
-                //                 returnType += '\n\t' + f + ': ' + convertPascal(projectName) + '_Boolean_Filters';
-                //             }
-                //         }
-                //         returnType += '\n} \n';
-                //     }
-                // }
-
                 return returnType;
             });
 
@@ -92,6 +68,41 @@ async function buildType(
     } else {
         return '';
     }
+}
+
+/**
+ * Generates GraphQL Input types for filters on accounts
+ * @param mapping A list of types to convert from {@link Operations} type to an SDL compitable GraphQL type
+ * @returns A GraphQL compitable input types string
+ */
+export function buildTypeForFilters(mapping: Operation[]): string {
+    if (mapping.length > 0) {
+        const projectName = config.projectName;
+        let stringType = mapping.map((x) => {
+            if (Object.keys(x[1]).length > 0) {
+                let returnType = `\n input ${x[0]} {`;
+                for (let k of Object.keys(x[1])) {
+                    let fType = x[1][k];
+                    if (fType === 'String') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_String_Filters';
+                    } else if (fType === 'Int') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_Int_Filters';
+                    } else if (fType === 'BigInt') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_BigInt_Filters';
+                    } else if (fType === 'Boolean') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                    } else {
+                        returnType += '\n\t' + k + ': ' + x[1][k];
+                    }
+                }
+                returnType += '\n} \n';
+                return returnType;
+            }
+        });
+        return stringType.join('\n');
+    }
+
+    return;
 }
 
 /**
@@ -131,7 +142,7 @@ export async function buildTypeDef(
     let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
 
     let baseFilterInputsStr = await buildType(baseInputFilters, { isInputString: true });
-    let accountFilterInputsStr = await buildType(accountFilterTypes, { isInputString: true });
+    let accountFilterInputsStr = await buildTypeForFilters(accountFilterTypes);
     let filtersStr = baseFilterInputsStr + accountFilterInputsStr;
 
     let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr + filtersStr;

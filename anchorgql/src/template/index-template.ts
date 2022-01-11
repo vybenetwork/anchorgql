@@ -6,6 +6,7 @@ import { Provider, setProvider, web3, Program } from '@project-serum/anchor';
 import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
 import { readFileSync } from 'fs';
+import { get } from 'lodash';
 import configVars from './config.json';
 
 const provider = Provider.env();
@@ -53,6 +54,37 @@ async function getAccountData(account: string, id = null) {
  */
 import { typeDefs } from './root';
 
+function applyFilter(data, property, propertyFilters) {
+    const filteredData = data.filter((d) => {
+        const propValue = get(d, property);
+        const filtersForField = Object.keys(propertyFilters);
+        for (let filter of filtersForField) {
+            const filterValueToCompare = propertyFilters[filter];
+            // not putting tripple eq and neq for BigInt and Int.
+            if (filter === 'eq') {
+                return propValue == filterValueToCompare;
+            } else if (filter === 'neq') {
+                return propValue != filterValueToCompare;
+            } else if (filter === 'gt') {
+                return propValue > filterValueToCompare;
+            } else if (filter === 'lt') {
+                return propValue < filterValueToCompare;
+            }
+        }
+    });
+    return filteredData;
+}
+
+function isFilter(objectToCheck): boolean {
+    return (
+        Object.keys(objectToCheck)
+            .filter((k) => k !== 'eq')
+            .filter((k) => k !== 'neq')
+            .filter((k) => k !== 'gt')
+            .filter((k) => k !== 'lt').length === 0
+    );
+}
+
 const resolvers = {
     BigInt: BigIntResolver,
     Query: {
@@ -62,15 +94,38 @@ const resolvers = {
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (parent, args) => {
             let data = await getAccountData('__ANCHORACCOUNTNAME__', args['publicKey']);
-            if (args?.where?.publicKey?.eq === undefined && args?.where?.publicKey?.neq === undefined) {
-                return data;
-            }
-            if (args?.where?.publicKey?.eq !== undefined) {
-                data = data.filter((d) => args.where.publicKey.eq === d.publicKey);
-            }
+            if (args?.where) {
+                if (args.where.publicKey?.eq !== undefined) {
+                    data = data.filter((d) => args.where.publicKey.eq === d.publicKey);
+                }
 
-            if (args?.where?.publicKey?.neq !== undefined) {
-                data = data.filter((d) => args.where.publicKey.neq !== d.publicKey);
+                if (args.where.publicKey?.neq !== undefined) {
+                    data = data.filter((d) => args.where.publicKey.neq !== d.publicKey);
+                }
+
+                let filters: any[] = [['ROOT', Object.entries(args.where)]];
+                let filtersAtCurrentLevel = filters;
+                while (filtersAtCurrentLevel.length > 0) {
+                    for (let fieldFilters of filtersAtCurrentLevel) {
+                        const pendingFilters = [];
+                        let propertyFilters = fieldFilters[1];
+                        for (let [property, propertyFilter] of propertyFilters) {
+                            if (isFilter(propertyFilter)) {
+                                data = applyFilter(
+                                    data,
+                                    (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
+                                    propertyFilter,
+                                );
+                            } else {
+                                pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
+                            }
+                        }
+                        filtersAtCurrentLevel = pendingFilters;
+                        if (filtersAtCurrentLevel.length === 0) {
+                            break;
+                        }
+                    }
+                }
             }
             return data;
         },
@@ -105,38 +160,6 @@ const resolvers = {
             };
         },
     },
-    ///----------FIELD_RESOLVERS-FOR-FILTERS----------///
-
-    __PROPERTY_NAME__: {
-        __FIELD_NAME__: async (parent, args, context, info) => {
-            if (args.where) {
-                let returnData = parent;
-                const filters = args.where;
-                for (let field of Object.keys(filters)) {
-                    const filtersForField = Object.keys(filters[field]);
-                    for (let filter of filtersForField) {
-                        const filterValueToCompare = filters[field][filter];
-                        if (returnData.account && field in returnData.account) {
-                            // not putting tripple eq and neq for BigInt and Int.
-                            if (filter === 'eq') {
-                                returnData = returnData.account[field] == filterValueToCompare ? parent : {};
-                            } else if (filter === 'neq') {
-                                returnData = returnData.account[field] != filterValueToCompare ? parent : {};
-                            } else if (filter === 'gt') {
-                                returnData = returnData.account[field] > filterValueToCompare ? parent : {};
-                            } else if (filter === 'lt') {
-                                returnData = returnData.account[field] < filterValueToCompare ? parent : {};
-                            }
-                        }
-                    }
-                }
-                return returnData.account;
-            }
-            return parent.account;
-        },
-    },
-
-    ///----------FIELD_RESOLVERS-FOR-FILTERS----------///
 
     ///----------ENUM_FIELD_RESOLVERS----------///
 
