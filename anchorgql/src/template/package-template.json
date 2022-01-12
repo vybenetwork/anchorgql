@@ -4,7 +4,7 @@
     "description": "",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "npm install && ANCHOR_PROVIDER_URL=__YOURANCHORPROVIDERURL__ ts-node src/index.ts"
+        "start": "npm install && ANCHOR_PROVIDER_URL=__YOURANCHORPROVIDERURL__ node --max-old-space-size=4096 -- node_modules/.bin/ts-node -P tsconfig.json src/index.ts"
     },
     "repository": {
         "type": "git",
