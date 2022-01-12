@@ -154,8 +154,8 @@
             "IDL_PATH": "./src/idls/zeta.json"
         },
         {
-            "PROJECT_NAME": "abc_structured_devnet",
-            "PROTOCOL": "abc",
+            "PROJECT_NAME": "katana_structured_devnet",
+            "PROTOCOL": "katana",
             "NETWORK": "devnet",
             "PROGRAM_ID": "1349iiGjWC7ZTbu6otFmJwztms122jEEnShKgpVnNewy",
             "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
@@ -176,6 +176,14 @@
             "PROGRAM_ID": "dammHkt7jmytvbS3nHTxQNEcP59aE57nxwV21YdqEDN",
             "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
             "IDL_PATH": "./src/idls/drift.json"
+        },
+        {
+            "PROJECT_NAME": "hedgehog_hh_vault_m",
+            "PROTOCOL": "hedgehog",
+            "NETWORK": "mainnet",
+            "PROGRAM_ID": "2e3TyMuAFuQH73SbE3S6RNvma7abpBj8v7w8AH7LSGxK",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/vault2.json"
         }
     ]
 }
