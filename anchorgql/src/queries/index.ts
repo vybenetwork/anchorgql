@@ -83,8 +83,9 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
                 [projectName +
                 '_' +
                 x.name +
-                `(where: ${convertPascal(projectName) + '_' + x.name}_Filters limit: Int)`]:
-                    '[' + convertPascal(projectName) + '_' + x.name + ']',
+                `(where: ${convertPascal(projectName) + '_' + x.name}_Filters order_by: ${
+                    convertPascal(projectName) + '_' + x.name
+                }_OrderBy limit: Int)`]: '[' + convertPascal(projectName) + '_' + x.name + ']',
             };
             accountNames.push(accountName);
         });

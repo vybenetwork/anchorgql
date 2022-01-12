@@ -5,6 +5,7 @@ import * as config from '../config.json';
 import { convertPascal, isSpecialEnum } from '../utils';
 import { readFile, writeFile } from 'fs/promises';
 import { getFilterInputsForBaseTypes, getAccountFilterTypes } from '../filters';
+import { getAccountOrderByTypes, getBaseInputForOrders } from '../orders';
 
 /**
  * Get an SDL compitable GraphQL Type/Input from the {@link Operation} type
@@ -80,7 +81,7 @@ export function buildTypeForFilters(mapping: Operation[]): string {
         const projectName = config.projectName;
         let stringType = mapping.map((x) => {
             if (Object.keys(x[1]).length > 0) {
-                let returnType = `\n input ${x[0]} {`;
+                let returnType = `\ninput ${x[0]} {`;
                 for (let k of Object.keys(x[1])) {
                     let fType = x[1][k];
                     if (fType === 'String') {
@@ -91,6 +92,35 @@ export function buildTypeForFilters(mapping: Operation[]): string {
                         returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_BigInt_Filters';
                     } else if (fType === 'Boolean') {
                         returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_Boolean_Filters';
+                    } else {
+                        returnType += '\n\t' + k + ': ' + x[1][k];
+                    }
+                }
+                returnType += '\n} \n';
+                return returnType;
+            }
+        });
+        return stringType.join('\n');
+    }
+
+    return;
+}
+
+/**
+ * Generates GraphQL Input types for order bys on accounts
+ * @param mapping A list of types to convert from {@link Operations} type to an SDL compitable GraphQL type
+ * @returns A GraphQL compitable input types string
+ */
+export function buildTypeForOrderBy(mapping: Operation[]): string {
+    if (mapping.length > 0) {
+        const projectName = config.projectName;
+        let stringType = mapping.map((x) => {
+            if (Object.keys(x[1]).length > 0) {
+                let returnType = `\ninput ${x[0]} {`;
+                for (let k of Object.keys(x[1])) {
+                    let fType = x[1][k];
+                    if (fType === 'String' || fType === 'Int' || fType === 'BigInt' || fType === 'Boolean') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_OrderBy';
                     } else {
                         returnType += '\n\t' + k + ': ' + x[1][k];
                     }
@@ -129,6 +159,9 @@ export async function buildTypeDef(
     let baseInputFilters = getFilterInputsForBaseTypes();
     let accountFilterTypes = getAccountFilterTypes(idlConfig);
 
+    // Type for Orders
+    let accountOrderByTypes = getAccountOrderByTypes(idlConfig);
+
     // Process the types to create valid gql strings
     let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
@@ -142,10 +175,14 @@ export async function buildTypeDef(
     let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
 
     let baseFilterInputsStr = await buildType(baseInputFilters, { isInputString: true });
-    let accountFilterInputsStr = await buildTypeForFilters(accountFilterTypes);
+    let accountFilterInputsStr = buildTypeForFilters(accountFilterTypes);
     let filtersStr = baseFilterInputsStr + accountFilterInputsStr;
 
-    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr + filtersStr;
+    let baseOrderInputStr = getBaseInputForOrders();
+    let orderByInputStr = buildTypeForOrderBy(accountOrderByTypes);
+    let orderStr = baseOrderInputStr + orderByInputStr;
+
+    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr + filtersStr + orderStr;
 
     let data = await readFile(typeDefTemplateFile, 'utf8');
     const split = data.split('///--------------------///');
