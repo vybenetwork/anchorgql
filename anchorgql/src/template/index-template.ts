@@ -94,11 +94,6 @@ const resolvers = {
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (parent, args) => {
             let data = await getAccountData('__ANCHORACCOUNTNAME__', args['publicKey']);
-
-            if (args?.limit) {
-                data = data.slice(0, args.limit);
-            }
-
             if (args?.where) {
                 if (args.where.publicKey?.eq !== undefined) {
                     data = data.filter((d) => args.where.publicKey.eq === d.publicKey);
@@ -132,6 +127,11 @@ const resolvers = {
                     }
                 }
             }
+
+            if (args?.limit) {
+                data = data.slice(0, args.limit);
+            }
+
             return data;
         },
         ///----------ACCOUNT_RESOLVERS----------///
