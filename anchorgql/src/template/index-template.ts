@@ -136,27 +136,27 @@ const resolvers = {
         },
         ///----------ACCOUNT_RESOLVERS----------///
 
-        __TRANSACTION_NAME__: async (parent, args) => {
-            let sigatures = await provider.connection.getSignaturesForAddress(
-                programId,
-                {
-                    limit: args?.limit ? Math.min(args.limit, 25) : 10,
-                },
-                'finalized',
-            );
+        // __TRANSACTION_NAME__: async (parent, args) => {
+        //     let sigatures = await provider.connection.getSignaturesForAddress(
+        //         programId,
+        //         {
+        //             limit: args?.limit ? Math.min(args.limit, 25) : 10,
+        //         },
+        //         'finalized',
+        //     );
 
-            if (args?.limit) {
-                sigatures = sigatures.slice(0, Math.min(args.limit, 25));
-            }
-            const transactions = await Promise.all(
-                sigatures.map((s) => {
-                    return provider.connection.getTransaction(s.signature, {
-                        commitment: 'finalized',
-                    });
-                }),
-            );
-            return transactions;
-        },
+        //     if (args?.limit) {
+        //         sigatures = sigatures.slice(0, Math.min(args.limit, 25));
+        //     }
+        //     const transactions = await Promise.all(
+        //         sigatures.map((s) => {
+        //             return provider.connection.getTransaction(s.signature, {
+        //                 commitment: 'finalized',
+        //             });
+        //         }),
+        //     );
+        //     return transactions;
+        // },
 
         config: async () => {
             return {

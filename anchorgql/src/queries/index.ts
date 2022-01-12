@@ -90,10 +90,10 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
         });
 
         accountNames.push({ config: 'Config' });
-        const transactionsFilterName = projectName + '_Transactions(limit: Int)';
-        accountNames.push({
-            [transactionsFilterName]: '[JSON]',
-        });
+        // const transactionsFilterName = projectName + '_Transactions(limit: Int)';
+        // accountNames.push({
+        //     [transactionsFilterName]: '[JSON]',
+        // });
         return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
     } else {
         accountNames.push({ config: 'Config' });

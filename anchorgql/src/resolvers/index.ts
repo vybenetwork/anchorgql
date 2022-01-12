@@ -40,7 +40,7 @@ export async function buildResolvers(
     }
 
     // replace transaction filter name
-    codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
+    //codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
     await writeFile(indexOutputFile, codeString);
     await buildEnumFieldResolvers(indexOutputFile, idlConfig);
 }
