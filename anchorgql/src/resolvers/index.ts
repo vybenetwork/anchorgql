@@ -47,7 +47,7 @@ export async function buildResolvers(
 
 /**
  * The method creates a valid GraphQL type for an enum passed in the {@link Operation} format.
- * For the names of enums, their values are lowercased
+ * For the names of enums, their values are uppercased
  * @param enumData The enum to convert to it's GraphQL type in {@link Operation} format
  * @param enumTypes All the enums types generated using the {@link getEnumTypes} method
  * @returns A valid GraphQL type for the enum passed in {@link Operation} format
@@ -56,7 +56,7 @@ export function generateFieldResolverForEnum(enumData: Operation, enumTypes: Ope
     const projectName = convertPascal(config.projectName);
     const fieldResolver = `${enumData[0]}: {
         name: async(parent) => {
-            return Object.keys(parent)[0].toLowerCase()
+            return Object.keys(parent)[0].toUpperCase()
         },
         data: async(parent) => {
             return Object.keys(parent[Object.keys(parent)[0]]).length > 0 ? parent[Object.keys(parent)[0]] : {message: 'No Fields exist for this variant'}

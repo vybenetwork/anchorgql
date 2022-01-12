@@ -82,7 +82,7 @@ export async function getEnumTypes(idlConfig: Idl): Promise<Operation[]> {
             typeArr.push([
                 convertPascal(projectName) + '_' + x.name,
                 {
-                    name: enumVariantNames.map((n) => n.toLowerCase()).toString(),
+                    name: enumVariantNames.map((n) => n.toUpperCase()).toString(),
                     data: `${
                         variantsWithFields.length > 0
                             ? variantsWithFields.concat([typeNameForDataFieldInfoType]).join(' | ')
