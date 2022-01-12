@@ -75,6 +75,23 @@ function applyFilter(data, property, propertyFilters) {
     return filteredData;
 }
 
+function applyOrderBy(data, property, propertyOrderBys) {
+    const orderedData = data.sort((a, b) => {
+        const propValue1 = get(a, property);
+        const propValue2 = get(b, property);
+        const orderBysForField = Object.keys(propertyOrderBys);
+        for (let orderBy of orderBysForField) {
+            const filterValueToCompare = propertyOrderBys[orderBy];
+            if (filterValueToCompare === 'ASC') {
+                return propValue1 > propValue2 ? 1 : propValue2 > propValue1 ? -1 : 0;
+            } else {
+                return propValue1 > propValue2 ? -1 : propValue2 > propValue1 ? 1 : 0;
+            }
+        }
+    });
+    return orderedData;
+}
+
 function isFilter(objectToCheck): boolean {
     return (
         Object.keys(objectToCheck)
@@ -83,6 +100,10 @@ function isFilter(objectToCheck): boolean {
             .filter((k) => k !== 'gt')
             .filter((k) => k !== 'lt').length === 0
     );
+}
+
+function isOrderBy(objectToCheck): boolean {
+    return Object.keys(objectToCheck).filter((k) => k !== 'sortOrder').length === 0;
 }
 
 const resolvers = {
@@ -130,6 +151,35 @@ const resolvers = {
 
             if (args?.limit) {
                 data = data.slice(0, args.limit);
+            }
+
+            if (args?.order_by) {
+                let orderBys: any[] = [['ROOT', Object.entries(args.order_by)]];
+                let orderBysAtCurrentLevel = orderBys;
+                while (orderBysAtCurrentLevel.length > 0) {
+                    for (let fieldOrderBys of orderBysAtCurrentLevel) {
+                        const pendingOrderBys = [];
+                        let propertyOrderBys = fieldOrderBys[1];
+                        for (let [property, propertyOrderBy] of propertyOrderBys) {
+                            if (isOrderBy(propertyOrderBy)) {
+                                data = applyOrderBy(
+                                    data,
+                                    (fieldOrderBys[0] + '.' + property).replace('ROOT.', ''),
+                                    propertyOrderBy,
+                                );
+                            } else {
+                                pendingOrderBys.push([
+                                    fieldOrderBys[0] + '.' + property,
+                                    Object.entries(propertyOrderBy),
+                                ]);
+                            }
+                        }
+                        orderBysAtCurrentLevel = pendingOrderBys;
+                        if (orderBysAtCurrentLevel.length === 0) {
+                            break;
+                        }
+                    }
+                }
             }
 
             return data;
