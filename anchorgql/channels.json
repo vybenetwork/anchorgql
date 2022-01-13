@@ -154,11 +154,11 @@
             "IDL_PATH": "./src/idls/zeta.json"
         },
         {
-            "PROJECT_NAME": "katana_structured_devnet",
+            "PROJECT_NAME": "katana_structured_mainnet",
             "PROTOCOL": "katana",
-            "NETWORK": "devnet",
+            "NETWORK": "mainnet",
             "PROGRAM_ID": "1349iiGjWC7ZTbu6otFmJwztms122jEEnShKgpVnNewy",
-            "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
             "IDL_PATH": "./src/idls/structured.json"
         },
         {
