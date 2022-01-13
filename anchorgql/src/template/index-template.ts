@@ -126,7 +126,7 @@ const resolvers = {
     __ROOTNAME__: {
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (parent, args) => {
-            let data = await getAccountData('__ANCHORACCOUNTNAME__', args['publicKey']);
+            let data = await getAccountData('__ANCHORACCOUNTNAME__', args?.where?.publicKey?.eq ?? null);
             if (args?.where) {
                 if (args.where.publicKey?.eq !== undefined) {
                     data = data.filter((d) => args.where.publicKey.eq === d.publicKey);
