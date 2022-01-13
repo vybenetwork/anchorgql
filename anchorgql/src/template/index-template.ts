@@ -69,6 +69,14 @@ function applyFilter(data, property, propertyFilters) {
                 return propValue > filterValueToCompare;
             } else if (filter === 'lt') {
                 return propValue < filterValueToCompare;
+            } else if (filter === 'contains') {
+                return propValue.toString().includes(filterValueToCompare);
+            } else if (filter === 'doesNotContain') {
+                return !propValue.toString().includes(filterValueToCompare);
+            } else if (filter === 'startsWith') {
+                return propValue.toString().startsWith(filterValueToCompare);
+            } else if (filter === 'endsWith') {
+                return propValue.toString().endsWith(filterValueToCompare);
             }
         }
     });
@@ -98,7 +106,11 @@ function isFilter(objectToCheck): boolean {
             .filter((k) => k !== 'eq')
             .filter((k) => k !== 'neq')
             .filter((k) => k !== 'gt')
-            .filter((k) => k !== 'lt').length === 0
+            .filter((k) => k !== 'lt')
+            .filter((k) => k !== 'contains')
+            .filter((k) => k !== 'doesNotContain')
+            .filter((k) => k !== 'startsWith')
+            .filter((k) => k !== 'endsWith').length === 0
     );
 }
 

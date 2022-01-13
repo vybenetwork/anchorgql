@@ -13,6 +13,10 @@ export function getFilterInputsForBaseTypes(): Operation[] {
         {
             eq: 'String',
             neq: 'String',
+            contains: 'String',
+            doesNotContain: 'String',
+            startsWith: 'String',
+            endsWith: 'String',
         },
     ];
 
