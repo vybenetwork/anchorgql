@@ -18,14 +18,13 @@ class bcolors:
 def build_and_start_server(project_name, prd_mode):
     print(f'{bcolors.OKCYAN}INFO: Starting test for {project_name}')
     completed_process_result = subprocess.run(
-        "npm start", shell=True)
+        "npm run prod", shell=True)
     if completed_process_result.returncode != 0:
         print(
             f'{bcolors.FAIL}ERROR: Failed to generate Apollo GraphQL project for project: {project_name}{bcolors.ENDC}')
         return False
     print(f'{bcolors.OKGREEN}DONE: Project creation successful for project: {project_name}{bcolors.ENDC}')
-    server_directory = "./src/program_" + \
-        project_name if not prd_mode else "./src/server"
+    server_directory = "./src/server"
     new_process = subprocess.run(
         "npm start", cwd=server_directory, shell=True)
     if new_process.returncode != 0:

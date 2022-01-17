@@ -31,7 +31,7 @@ async function copyFiles(path: string) {
 
 async function main() {
     //** Edit this to change your server directory */
-    const SUB_DIR = config.prdMode ? './src/server' : './src/program_' + config.projectName;
+    const SUB_DIR = './src/server';
 
     let idlConfig = await import('../' + config.idlPath);
     const indexOutputFile = SUB_DIR + '/src/index.ts';
