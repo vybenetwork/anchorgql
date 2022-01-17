@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "Debug AnchorGQL",
+            "request": "launch",
+            "runtimeArgs": ["start", "debug"],
+            "runtimeExecutable": "npm",
+            "skipFiles": ["<node_internals>/**"],
+            "type": "pwa-node"
+        },
+        {
+            "name": "Debug Generated Server",
+            "request": "launch",
+            "runtimeArgs": ["start", "debug"],
+            "runtimeExecutable": "npm",
+            "skipFiles": ["<node_internals>/**"],
+            "type": "pwa-node",
+            "cwd": "${workspaceFolder}/src/server"
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
