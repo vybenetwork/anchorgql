@@ -149,7 +149,7 @@
             "PROJECT_NAME": "zeta_devnet",
             "PROTOCOL": "zeta",
             "NETWORK": "devnet",
-            "PROGRAM_ID": "98utEQgwfbkvTKVS1seNQmFYFviaLsXAXqaWHr1V8JXF",
+            "PROGRAM_ID": "ZETAxsqBRek56DhiGXrn75yj2NHU3aYUnxvHXpkf3aD",
             "ANCHOR_PROVIDER_URL": "https://api.devnet.solana.com",
             "IDL_PATH": "./src/idls/zeta.json"
         },
