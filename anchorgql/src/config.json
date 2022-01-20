@@ -1,17 +1,1 @@
-{
-    "projectName": "zeta_zeta_m",
-    "protocol": "zeta",
-    "network": "mainnet",
-    "programID": "ZETAxsqBRek56DhiGXrn75yj2NHU3aYUnxvHXpkf3aD",
-    "anchorProviderURL": "https://api.mainnet-beta.solana.com",
-    "idlPath": "./src/idls/zeta.json",
-    "anchorVersion": "0.14.0",
-    "idl": null,
-    "port": 51305,
-    "packageJsonTemplateFile": "./src/template/package-template.json",
-    "indexTemplateFile": "./src/template/index-template.ts",
-    "typeDefTemplateFile": "./src/template/typedef-template.ts",
-    "configFile": "./src/config.ts",
-    "testMode": false,
-    "prdMode": false
-}
+{"projectName": "hedgehog_hh_vault_m", "protocol": "hedgehog", "network": "mainnet", "programID": "2e3TyMuAFuQH73SbE3S6RNvma7abpBj8v7w8AH7LSGxK", "anchorProviderURL": "https://api.mainnet-beta.solana.com", "idlPath": "./src/idls/vault2.json", "anchorVersion": "0.14.0", "idl": null, "port": 51305, "packageJsonTemplateFile": "./src/template/package-template.json", "indexTemplateFile": "./src/template/index-template.ts", "typeDefTemplateFile": "./src/template/typedef-template.ts", "configFile": "./src/config.ts", "testMode": true, "prdMode": false}

@@ -1,6 +1,6 @@
 import { Idl, IdlField, IdlType, Operation } from '../types';
 import * as config from '../config.json';
-import { convertPascal, getGqlTypeForIdlScalarType, getKeyForIdlObjectType, getKeyOrGQLTypeForIDLType } from '../utils';
+import { convertPascal, getGqlTypeForIdlScalarType, getKeyOrGQLTypeForIDLType } from '../utils';
 
 /**
  * Get the inputs for filters for different types

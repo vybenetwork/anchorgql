@@ -1,7 +1,7 @@
 import { camelCase } from 'lodash';
 import * as config from '../config.json';
 import { Idl, IdlField, IdlType, IdlTypeDef, Operation } from '../types';
-import { convertPascal, getGqlTypeForIdlScalarType, getKeyForIdlObjectType, getKeyOrGQLTypeForIDLType } from '../utils';
+import { convertPascal, getKeyOrGQLTypeForIDLType, isDefinedTypeUsedInAccounts } from '../utils';
 
 /**
  * Get types for all struct types in the IDL
@@ -13,7 +13,9 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
     let typeArr: Operation[] = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
-        let idlStructTypes = idlTypes.filter((x) => x.type.kind === 'struct');
+        let idlStructTypes = idlTypes.filter(
+            (x) => x.type.kind === 'struct' && isDefinedTypeUsedInAccounts(x.name, idlConfig),
+        );
         for (let x of idlStructTypes) {
             let name: string = convertPascal(projectName) + '_' + x.name;
             let values = [];
@@ -47,7 +49,9 @@ export async function getEnumTypes(idlConfig: Idl): Promise<Operation[]> {
     let typeArr: Operation[] = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
-        let idlEnumTypes = idlTypes.filter((x) => x.type.kind === 'enum');
+        let idlEnumTypes = idlTypes.filter(
+            (x) => x.type.kind === 'enum' && isDefinedTypeUsedInAccounts(x.name, idlConfig),
+        );
         for (let x of idlEnumTypes) {
             let enumVariants = x.type.variants;
             let variantsWithFields = [];

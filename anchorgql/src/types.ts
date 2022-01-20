@@ -98,10 +98,15 @@ export type IdlType =
     | 'bytes'
     | 'string'
     | 'publicKey'
-    | IdlTypeVec
-    | IdlTypeOption
     | IdlTypeDefined
+    | IdlTypeOption
+    | IdlTypeCOption
+    | IdlTypeVec
     | IdlTypeArray;
+
+export type IdlTypeCOption = {
+    coption: IdlType;
+};
 
 export type IdlTypeVec = {
     vec: IdlType;
