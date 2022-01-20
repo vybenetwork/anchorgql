@@ -184,6 +184,7 @@ function getDefinedTypesNestedInADefinedTypeField(idlField: IdlField | IdlType, 
     if (typeDetails.type.kind === 'struct') {
         const fields = typeDetails.type.fields;
         const definedTypeFields = fields.filter((f) => typeof f.type === 'object' && 'defined' in f.type);
+        definedTypes = definedTypes.concat(definedTypeFields.map((df) => df));
         for (let a of definedTypeFields) {
             const nestedDefinedTypes = getDefinedTypesNestedInADefinedTypeField(a, idlConfig);
             if (nestedDefinedTypes.length > 0) {
