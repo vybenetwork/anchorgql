@@ -5,6 +5,16 @@ import { getEnumTypes } from '../types/index';
 import { readFile, writeFile } from 'fs/promises';
 
 /**
+ * For each field of an array type on a type, a resolver string is generated for limits and
+ * potentially filters. This function returns that resolver string
+ * @param fieldName The name of the field for which an inner resolver string is to be generated
+ * @returns A field resolver string for a field of an array type
+ */
+function getInnerResolverString(fieldName: string): string {
+    return `\n\t\t${fieldName}:  async (parent, args) => {\n\t\t\tif (args && args.limit) {\n\t\t\treturn parent.${fieldName}.slice(0, args.limit);\n\t\t\t\t}\n\t\t\treturn parent;\n\t\t},\t\n`;
+}
+
+/**
  * The method builds resolvers for accounts and enums. It expects certain
  * piece of code in template file to be in fixed places. Edit the template file
  * with caution as it may break this method.
@@ -56,7 +66,7 @@ export async function buildArrayFieldResolvers(indexOutputFile: string, idlConfi
         a.type.fields.map((f) => {
             const key = getKeyOrGQLTypeForIDLType(f.type);
             if (key.startsWith('[') && key.endsWith(']')) {
-                innerResolversString += `\n\t\t${f.name}:  async (parent, args) => {\n\t\t\tif (args && args.limit) {\n\t\t\treturn parent.slice(0, args.limit);\n\t\t\t\t}\n\t\t\treturn parent;\n\t\t},\t\n`;
+                innerResolversString += getInnerResolverString(f.name);
             }
         });
 
@@ -64,6 +74,25 @@ export async function buildArrayFieldResolvers(indexOutputFile: string, idlConfi
             returnString += `${accountName}: { ${innerResolversString} \t},\n\t`;
         }
     });
+
+    if (idlConfig.types) {
+        idlConfig.types
+            .filter((x) => x.type.kind === 'struct' && isDefinedTypeUsedInAccounts(x.name, idlConfig))
+            .map((x) => {
+                let innerResolversString = '';
+                let name: string = convertPascal(projectName) + '_' + x.name;
+                x.type.fields.map((f) => {
+                    let key = getKeyOrGQLTypeForIDLType(f.type);
+                    if (key.startsWith('[') && key.endsWith(']')) {
+                        innerResolversString += getInnerResolverString(f.name);
+                    }
+                });
+
+                if (innerResolversString !== '') {
+                    returnString += `${name}: { ${innerResolversString} \t},\n\t`;
+                }
+            });
+    }
 
     let data = await readFile(indexOutputFile, 'utf8');
     let split = data.split(arrayFieldResolverString);
