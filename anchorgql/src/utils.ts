@@ -17,7 +17,7 @@ import * as config from './config.json';
  * @constant
  * Rust Types correspoding to GraphQL's String type
  */
-export const STRING_TYPES = ['bytes', 'string', 'publicKey'];
+export const STRING_TYPES = ['string', 'publicKey'];
 
 /**
  * @constant
@@ -91,6 +91,8 @@ export function getGqlTypeForIdlScalarType(idlType: IdlType): string {
         return 'BigInt';
     } else if (idlTypeStringified === 'bool') {
         return 'Boolean';
+    } else if (idlTypeStringified === 'bytes') {
+        return 'Byte';
     } else {
         throw 'An unsupported scalar type was encountered in the IDL by the indexer.';
     }

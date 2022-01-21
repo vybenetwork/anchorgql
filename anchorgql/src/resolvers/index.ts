@@ -11,7 +11,7 @@ import { readFile, writeFile } from 'fs/promises';
  * @returns A field resolver string for a field of an array type
  */
 function getInnerResolverString(fieldName: string): string {
-    return `\n\t\t${fieldName}:  async (parent, args) => {\n\t\t\tif (args && args.limit) {\n\t\t\treturn parent.${fieldName}.slice(0, args.limit);\n\t\t\t\t}\n\t\t\treturn parent;\n\t\t},\t\n`;
+    return `\n\t\t${fieldName}:  async (parent, args) => {\n\t\t\tif (args && args.limit) {\n\t\t\treturn parent.${fieldName}.slice(0, args.limit);\n\t\t\t\t}\n\t\t\treturn parent.${fieldName};\n\t\t},\t\n`;
 }
 
 /**

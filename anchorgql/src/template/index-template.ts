@@ -1,5 +1,5 @@
 import { ApolloServer } from 'apollo-server-express';
-import { BigIntResolver } from 'graphql-scalars';
+import { BigIntResolver, ByteResolver } from 'graphql-scalars';
 import express from 'express';
 import { AddressInfo } from 'net';
 import { Provider, setProvider, web3, Program } from '@project-serum/anchor';
@@ -120,6 +120,7 @@ function isOrderBy(objectToCheck): boolean {
 
 const resolvers = {
     BigInt: BigIntResolver,
+    Byte: ByteResolver,
     Query: {
         __PROJECTNAME__: () => ({}),
     },
