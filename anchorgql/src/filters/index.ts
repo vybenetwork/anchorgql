@@ -63,7 +63,15 @@ function getFilterInputsForObjectType(idlType: IdlType, idlConfig: Idl): Operati
         const typeDetails = idlConfig.types.filter((t) => t.name === idlType.defined)[0];
         if (typeDetails.type.kind === 'struct') {
             const fields = typeDetails.type.fields;
-            const definedTypeFields = fields.filter((f) => typeof f.type === 'object' && 'defined' in f.type);
+            const definedTypeFields = fields.filter(
+                (f) =>
+                    typeof f.type === 'object' &&
+                    ('defined' in f.type ||
+                        ('vec' in f.type && typeof f.type.vec === 'object' && 'defined' in f.type.vec) ||
+                        ('option' in f.type && typeof f.type.option === 'object' && 'defined' in f.type.option) ||
+                        ('coption' in f.type && typeof f.type.coption === 'object' && 'defined' in f.type.coption) ||
+                        ('array' in f.type && typeof f.type.array[0] === 'object' && 'defined' in f.type.array[0])),
+            );
             objectTypes = objectTypes.concat(definedTypeFields.map((df) => df.type));
             for (let a of definedTypeFields) {
                 const nestedObjectTypes = getFilterInputsForObjectType(a.type, idlConfig);

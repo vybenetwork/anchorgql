@@ -185,7 +185,15 @@ function getDefinedTypesNestedInADefinedTypeField(idlField: IdlField | IdlType, 
     const typeDetails = idlConfig.types.filter((t) => t.name === definedFieldTypeName)[0];
     if (typeDetails.type.kind === 'struct') {
         const fields = typeDetails.type.fields;
-        const definedTypeFields = fields.filter((f) => typeof f.type === 'object' && 'defined' in f.type);
+        const definedTypeFields = fields.filter(
+            (f) =>
+                typeof f.type === 'object' &&
+                ('defined' in f.type ||
+                    ('vec' in f.type && typeof f.type.vec === 'object' && 'defined' in f.type.vec) ||
+                    ('option' in f.type && typeof f.type.option === 'object' && 'defined' in f.type.option) ||
+                    ('coption' in f.type && typeof f.type.coption === 'object' && 'defined' in f.type.coption) ||
+                    ('array' in f.type && typeof f.type.array[0] === 'object' && 'defined' in f.type.array[0])),
+        );
         definedTypes = definedTypes.concat(definedTypeFields.map((df) => df));
         for (let a of definedTypeFields) {
             const nestedDefinedTypes = getDefinedTypesNestedInADefinedTypeField(a, idlConfig);
@@ -218,7 +226,15 @@ export function definedTypeNameUsedInAnAccountField(field: IdlType, typeName: st
             const nestedDefinedTypesToCheck = getDefinedTypesNestedInADefinedTypeField(field.vec, idlConfig);
             if (
                 nestedDefinedTypesToCheck.some(
-                    (n) => typeof n.type === 'object' && 'defined' in n.type && n.type.defined === typeName,
+                    (f) =>
+                        typeof f.type === 'object' &&
+                        (('defined' in f.type && f.type.defined === typeName) ||
+                            ('vec' in f.type && typeof f.type.vec === 'object' && 'defined' in f.type.vec) ||
+                            ('option' in f.type && typeof f.type.option === 'object' && 'defined' in f.type.option) ||
+                            ('coption' in f.type &&
+                                typeof f.type.coption === 'object' &&
+                                'defined' in f.type.coption) ||
+                            ('array' in f.type && typeof f.type.array[0] === 'object' && 'defined' in f.type.array[0])),
                 )
             ) {
                 return true;
