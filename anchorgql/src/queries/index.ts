@@ -20,9 +20,17 @@ export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
                     } else {
                         key = getGqlTypeForIdlScalarType(y.type);
                     }
-                    return {
-                        [y['name']]: key,
-                    };
+
+                    // ARRAY LIMITS
+                    if (key.startsWith('[') && key.endsWith(']')) {
+                        return {
+                            [y['name'] + '(limit: Int)']: key,
+                        };
+                    } else {
+                        return {
+                            [y['name']]: key,
+                        };
+                    }
                 });
                 return [name, Object.assign({}, ...fields)];
             });

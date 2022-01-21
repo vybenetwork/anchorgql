@@ -21,9 +21,16 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
             let values = [];
             values = x.type.fields.map((y: IdlField) => {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
-                return {
-                    [y['name']]: key,
-                };
+                // ARRAY LIMITS
+                if (key.startsWith('[') && key.endsWith(']')) {
+                    return {
+                        [y['name'] + '(limit: Int)']: key,
+                    };
+                } else {
+                    return {
+                        [y['name']]: key,
+                    };
+                }
             });
             //let filters = getFiltersForIDLType(x.type);
             if (values.length > 0) {

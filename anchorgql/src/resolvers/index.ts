@@ -1,5 +1,5 @@
 import { Idl, Operation } from '../types';
-import { convertPascal, isSpecialEnum } from '../utils';
+import { convertPascal, getKeyOrGQLTypeForIDLType, isDefinedTypeUsedInAccounts, isSpecialEnum } from '../utils';
 import * as config from '../config.json';
 import { getEnumTypes } from '../types/index';
 import { readFile, writeFile } from 'fs/promises';
@@ -43,6 +43,41 @@ export async function buildResolvers(
     //codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
     await writeFile(indexOutputFile, codeString);
     await buildEnumFieldResolvers(indexOutputFile, idlConfig);
+    await buildArrayFieldResolvers(indexOutputFile, idlConfig);
+}
+
+export async function buildArrayFieldResolvers(indexOutputFile: string, idlConfig: Idl) {
+    const arrayFieldResolverString = '///----------ARRAY_FIELD_RESOLVERS----------///';
+    let projectName = config.projectName;
+    let returnString = '';
+    idlConfig.accounts.map((a) => {
+        const accountName = convertPascal(projectName) + '_' + a.name + 'Account';
+        let innerResolversString = '';
+        a.type.fields.map((f) => {
+            const key = getKeyOrGQLTypeForIDLType(f.type);
+            if (key.startsWith('[') && key.endsWith(']')) {
+                innerResolversString += `\n\t\t${f.name}:  async (parent, args) => {\n\t\t\tif (args && args.limit) {\n\t\t\treturn parent.slice(0, args.limit);\n\t\t\t\t}\n\t\t\treturn parent;\n\t\t},\t\n`;
+            }
+        });
+
+        if (innerResolversString !== '') {
+            returnString += `${accountName}: { ${innerResolversString} \t},\n\t`;
+        }
+    });
+
+    let data = await readFile(indexOutputFile, 'utf8');
+    let split = data.split(arrayFieldResolverString);
+
+    const updatedResolverFileData =
+        split[0] +
+        arrayFieldResolverString +
+        '\n' +
+        '\t' +
+        returnString +
+        arrayFieldResolverString +
+        split[1] +
+        split[2];
+    await writeFile(indexOutputFile, updatedResolverFileData);
 }
 
 /**
