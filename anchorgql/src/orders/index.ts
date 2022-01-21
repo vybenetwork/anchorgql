@@ -125,7 +125,23 @@ export function getAccountOrderByTypes(idlConfig: Idl): Operation[] {
         }
     }
 
-    const uniqueNestedObjects = [...new Set(nestedInputsToGenerate.map((i) => Object.values(i)).map((v) => v[0]))];
+    const uniqueNestedObjects = [
+        ...new Set(
+            nestedInputsToGenerate.map((i) => {
+                if ('defined' in i) {
+                    return i.defined;
+                } else if ('vec' in i && typeof i.vec === 'object' && 'defined' in i.vec) {
+                    return i.vec.defined;
+                } else if ('option' in i && typeof i.option === 'object' && 'defined' in i.option) {
+                    return i.option.defined;
+                } else if ('coption' in i && typeof i.coption === 'object' && 'defined' in i.coption) {
+                    return i.coption.defined;
+                } else if ('array' in i && typeof i.array[0] === 'object' && 'defined' in i.array[0]) {
+                    return i.array[0].defined;
+                }
+            }),
+        ),
+    ];
     for (let nType of uniqueNestedObjects) {
         const typeDetails = idlConfig.types.filter((t) => t.name === nType)[0];
         const name = convertPascal(projectName) + '_' + nType + '_OrderBy';
