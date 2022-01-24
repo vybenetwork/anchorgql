@@ -1,6 +1,13 @@
 import { Idl, IdlField, IdlType, Operation } from '../types';
 import * as config from '../config.json';
-import { convertPascal, getGqlTypeForIdlScalarType, getKeyOrGQLTypeForIDLType } from '../utils';
+import {
+    convertPascal,
+    getGqlTypeForIdlScalarType,
+    getKeyOrGQLTypeForIDLType,
+    isDefinedTypeUsedInAccounts,
+    getFilterTypeForField,
+    getDefinedTypeOfArrayOrVectorField,
+} from '../utils';
 
 /**
  * Get the inputs for filters for different types
@@ -191,6 +198,119 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
         if (values.length > 0) {
             filters.push([name, Object.assign({}, ...values)]);
         }
+    }
+
+    return filters;
+}
+
+export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
+    let projectName = config.projectName;
+    let nestedInputsToGenerate = [];
+    let filters: Operation[] = [];
+
+    let idlAccounts = idlConfig.accounts;
+    if (idlAccounts) {
+        for (let account of idlAccounts) {
+            if (account.type.kind === 'struct') {
+                const accountFields = account.type.fields;
+                if (accountFields) {
+                    for (let field of accountFields) {
+                        const fieldTypeStringified = field.type as string;
+                        if (typeof fieldTypeStringified === 'object') {
+                            if (Object.keys(field.type)[0] === 'array' || Object.keys(field.type)[0] === 'vec') {
+                                const key = getKeyOrGQLTypeForIDLType(field.type);
+                                if (
+                                    key !== '[String]' &&
+                                    key !== '[Int]' &&
+                                    key !== '[BigInt]' &&
+                                    key !== '[Boolean]' &&
+                                    key !== '[Byte]'
+                                ) {
+                                    let values = [];
+                                    const filterTypeForField = getFilterTypeForField(key, account.name, field.name);
+                                    const filterTypeDetails = getDefinedTypeOfArrayOrVectorField(field, idlConfig);
+                                    if (
+                                        filterTypeDetails.type.kind === 'struct' &&
+                                        filterTypeDetails.type.fields?.length > 0
+                                    ) {
+                                        const filterFields = filterTypeDetails.type.fields;
+                                        if (filterFields) {
+                                            for (let field of filterFields) {
+                                                const fieldTypeStringified = field.type as string;
+                                                if (typeof field.type === 'object') {
+                                                    if ('array' in field.type) {
+                                                        const key = getKeyOrGQLTypeForIDLType(field.type.array[0]);
+                                                        values.push({ [field.name]: key });
+                                                    } else if ('vec' in field.type) {
+                                                        const key = getKeyOrGQLTypeForIDLType(field.type.vec);
+                                                        values.push({ [field.name]: key });
+                                                    }
+                                                } else {
+                                                    const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
+                                                    values.push({ [field.name]: scalarGQLType });
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (values.length > 0) {
+                                        filters.push([filterTypeForField, Object.assign({}, ...values)]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    const idlTypes = idlConfig.types;
+    if (idlTypes?.length > 0) {
+        idlTypes
+            .filter((x) => x.type.kind === 'struct' && isDefinedTypeUsedInAccounts(x.name, idlConfig))
+            .map((x) => {
+                x.type.fields.map((y) => {
+                    let key = getKeyOrGQLTypeForIDLType(y.type);
+                    if (key.startsWith('[') && key.endsWith(']')) {
+                        const filterTypeForField = getFilterTypeForField(key, x.name, y.name);
+                        if (
+                            key !== '[String]' &&
+                            key !== '[Int]' &&
+                            key !== '[BigInt]' &&
+                            key !== '[Boolean]' &&
+                            key !== '[Byte]'
+                        ) {
+                            let values = [];
+                            const filterTypeDetails = getDefinedTypeOfArrayOrVectorField(y, idlConfig);
+                            if (filterTypeDetails.type.kind === 'struct' && filterTypeDetails.type.fields?.length > 0) {
+                                const filterFields = filterTypeDetails.type.fields;
+                                if (filterFields) {
+                                    for (let field of filterFields) {
+                                        const fieldTypeStringified = field.type as string;
+                                        if (typeof fieldTypeStringified !== 'object') {
+                                            const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
+                                            values.push({ [field.name]: scalarGQLType });
+                                        } else {
+                                            if (Object.keys(field.type)[0] === 'defined') {
+                                                const definedTypeDetails = idlConfig.types.filter(
+                                                    (t) => t.name === field.type['defined'],
+                                                )[0];
+                                                if (definedTypeDetails.type.kind !== 'enum') {
+                                                    const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
+                                                    values.push({ [field.name]: objectGqlType + '_Filters' });
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (values.length > 0) {
+                                filters.push([filterTypeForField, Object.assign({}, ...values)]);
+                            }
+                        }
+                    }
+                });
+            });
     }
 
     return filters;
