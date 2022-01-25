@@ -56,7 +56,12 @@ import { typeDefs } from './root';
 
 function applyFilter(data, property, propertyFilters) {
     const filteredData = data.filter((d) => {
-        const propValue = get(d, property);
+        let propValue = '';
+        if (property === '') {
+            propValue = d;
+        } else {
+            propValue = get(d, property);
+        }
         const filtersForField = Object.keys(propertyFilters);
         for (let filter of filtersForField) {
             const filterValueToCompare = propertyFilters[filter];

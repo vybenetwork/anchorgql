@@ -27,6 +27,13 @@ export function getFilterInputsForBaseTypes(): Operation[] {
         },
     ];
 
+    const stringValuesFilter: Operation = [
+        convertPascal(projectName) + '_' + 'String_Values_Filters',
+        {
+            _values: convertPascal(projectName) + '_' + 'String_Filters',
+        },
+    ];
+
     const intFilter: Operation = [
         convertPascal(projectName) + '_' + 'Int_Filters',
         {
@@ -34,6 +41,13 @@ export function getFilterInputsForBaseTypes(): Operation[] {
             neq: 'Int',
             gt: 'Int',
             lt: 'Int',
+        },
+    ];
+
+    const intValuesFilter: Operation = [
+        convertPascal(projectName) + '_' + 'Int_Values_Filters',
+        {
+            _values: convertPascal(projectName) + '_' + 'Int_Filters',
         },
     ];
 
@@ -47,13 +61,37 @@ export function getFilterInputsForBaseTypes(): Operation[] {
         },
     ];
 
+    const bigIntValuesFilter: Operation = [
+        convertPascal(projectName) + '_' + 'BigInt_Values_Filters',
+        {
+            _values: convertPascal(projectName) + '_' + 'BigInt_Filters',
+        },
+    ];
+
     const booleanFilter: Operation = [
         convertPascal(projectName) + '_' + 'Boolean_Filters',
         {
             eq: 'Boolean',
         },
     ];
-    return [stringFilter, intFilter, bigIntFilter, booleanFilter];
+
+    const booleanValuesFilter: Operation = [
+        convertPascal(projectName) + '_' + 'Boolean_Values_Filters',
+        {
+            _values: convertPascal(projectName) + '_' + 'Boolean_Filters',
+        },
+    ];
+
+    return [
+        stringFilter,
+        stringValuesFilter,
+        intFilter,
+        intValuesFilter,
+        bigIntFilter,
+        bigIntValuesFilter,
+        booleanFilter,
+        booleanValuesFilter,
+    ];
 }
 
 /**
@@ -236,7 +274,6 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                         const filterFields = filterTypeDetails.type.fields;
                                         if (filterFields) {
                                             for (let field of filterFields) {
-                                                const fieldTypeStringified = field.type as string;
                                                 if (typeof field.type === 'object') {
                                                     if ('array' in field.type) {
                                                         const key = getKeyOrGQLTypeForIDLType(field.type.array[0]);
@@ -247,7 +284,13 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                     }
                                                 } else {
                                                     const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
-                                                    values.push({ [field.name]: scalarGQLType });
+                                                    values.push({
+                                                        [field.name]:
+                                                            convertPascal(projectName) +
+                                                            '_' +
+                                                            scalarGQLType +
+                                                            '_Values_Filters',
+                                                    });
                                                 }
                                             }
                                         }
@@ -289,7 +332,13 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                         const fieldTypeStringified = field.type as string;
                                         if (typeof fieldTypeStringified !== 'object') {
                                             const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
-                                            values.push({ [field.name]: scalarGQLType });
+                                            values.push({
+                                                [field.name]:
+                                                    convertPascal(projectName) +
+                                                    '_' +
+                                                    scalarGQLType +
+                                                    '_Values_Filters',
+                                            });
                                         } else {
                                             if (Object.keys(field.type)[0] === 'defined') {
                                                 const definedTypeDetails = idlConfig.types.filter(

@@ -337,15 +337,15 @@ export function isDefinedTypeUsedInAccounts(typeName: string, idlConfig: Idl): b
 export function getFilterTypeForField(key: string, typeName: string, fieldName: string): string {
     let projectName = config.projectName;
     if (key === '[String]') {
-        return convertPascal(projectName) + '_' + 'String_Filters';
+        return convertPascal(projectName) + '_' + 'String_Values_Filters';
     } else if (key === '[Int]') {
-        return convertPascal(projectName) + '_' + 'Int_Filters';
+        return convertPascal(projectName) + '_' + 'Int_Values_Filters';
     } else if (key === '[BigInt]') {
-        return convertPascal(projectName) + '_' + 'BigInt_Filters';
+        return convertPascal(projectName) + '_' + 'BigInt_Values_Filters';
     } else if (key === '[Boolean]') {
-        return convertPascal(projectName) + '_' + 'Boolean_Filters';
+        return convertPascal(projectName) + '_' + 'Boolean_Values_Filters';
     } else if (key === '[Byte]') {
-        return convertPascal(projectName) + '_' + 'Byte_Filters';
+        return convertPascal(projectName) + '_' + 'Byte_Values_Filters';
     } else {
         return `${convertPascal(projectName)}_${typeName}_${fieldName}_Filters`;
     }
