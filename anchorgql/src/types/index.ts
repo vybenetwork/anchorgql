@@ -1,7 +1,7 @@
 import { camelCase } from 'lodash';
 import * as config from '../config.json';
 import { Idl, IdlField, IdlType, IdlTypeDef, Operation } from '../types';
-import { convertPascal, getKeyOrGQLTypeForIDLType, isDefinedTypeUsedInAccounts } from '../utils';
+import { convertPascal, getFilterTypeForField, getKeyOrGQLTypeForIDLType, isDefinedTypeUsedInAccounts } from '../utils';
 
 /**
  * Get types for all struct types in the IDL
@@ -23,8 +23,9 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
                 // ARRAY LIMITS
                 if (key.startsWith('[') && key.endsWith(']')) {
+                    const filterTypeForField = getFilterTypeForField(key, x.name, y.name);
                     return {
-                        [y['name'] + '(limit: Int)']: key,
+                        [y['name'] + `(limit: Int where: ${filterTypeForField})`]: key,
                     };
                 } else {
                     return {

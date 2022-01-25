@@ -1,10 +1,10 @@
 {
-    "projectName": "asol_asol_m",
-    "protocol": "asol",
-    "network": "mainnet",
-    "programID": "AURUqAcTZP8mhR6sWVxWyfBbpJRj4A3qqeFzLNhrwayE",
-    "anchorProviderURL": "https://api.mainnet-beta.solana.com",
-    "idlPath": "./src/idls/asol.json",
+    "projectName": "switchboard_switchboard_v2_d",
+    "protocol": "switchboard",
+    "network": "devnet",
+    "programID": "2TfB33aLaneQb5TNVwyDz3jSZXS6jdW2ARw1Dgf84XCG",
+    "anchorProviderURL": "https://api.devnet.solana.com",
+    "idlPath": "./src/idls/switchboard.json",
     "anchorVersion": "0.14.0",
     "idl": null,
     "port": 51305,
@@ -12,6 +12,6 @@
     "indexTemplateFile": "./src/template/index-template.ts",
     "typeDefTemplateFile": "./src/template/typedef-template.ts",
     "configFile": "./src/config.ts",
-    "testMode": true,
+    "testMode": false,
     "prdMode": false
 }

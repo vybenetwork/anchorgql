@@ -10,6 +10,7 @@ import {
     IdlTypeCOption,
     Idl,
     IdlField,
+    IdlTypeDef,
 } from './types';
 import * as config from './config.json';
 
@@ -323,4 +324,61 @@ export function isDefinedTypeUsedInAccounts(typeName: string, idlConfig: Idl): b
     }
 
     return false;
+}
+
+/**
+ * Generates a type for a filter depending upon the passed value for key
+ * @param key The key for the type generated using {@link getKeyForIdlObjectType},
+ * {@link getKeyOrGQLTypeForIDLType} or {@link getGqlTypeForIdlScalarType}
+ * @param typeName The name of the parent type on which the field exists
+ * @param fieldName The name of the field itself
+ * @returns The name of the filter for the field
+ */
+export function getFilterTypeForField(key: string, typeName: string, fieldName: string): string {
+    let projectName = config.projectName;
+    if (key === '[String]') {
+        return convertPascal(projectName) + '_' + 'String_Values_Filters';
+    } else if (key === '[Int]') {
+        return convertPascal(projectName) + '_' + 'Int_Values_Filters';
+    } else if (key === '[BigInt]') {
+        return convertPascal(projectName) + '_' + 'BigInt_Values_Filters';
+    } else if (key === '[Boolean]') {
+        return convertPascal(projectName) + '_' + 'Boolean_Values_Filters';
+    } else if (key === '[Byte]') {
+        return convertPascal(projectName) + '_' + 'Byte_Values_Filters';
+    } else {
+        return `${convertPascal(projectName)}_${typeName}_${fieldName}_Filters`;
+    }
+}
+
+/**
+ * Takes an array or vec type and returns the type details for a defined type if one is used
+ * in the compound type and a null otherwise
+ * @param field The vec or array type to get the defined type from
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns Type details for the defined type if one exists in vec or array type, null otherwise
+ */
+export function getDefinedTypeOfArrayOrVectorField(field: IdlField, idlConfig: Idl): IdlTypeDef | null {
+    let typeName = '';
+    if (
+        typeof field.type === 'object' &&
+        'array' in field.type &&
+        typeof field.type.array[0] === 'object' &&
+        'defined' in field.type.array[0]
+    ) {
+        typeName = field.type.array[0].defined;
+    } else if (
+        typeof field.type === 'object' &&
+        'vec' in field.type &&
+        typeof field.type.vec === 'object' &&
+        'defined' in field.type.vec
+    ) {
+        typeName = field.type.vec.defined;
+    }
+
+    if (typeName === '' || !idlConfig.types) {
+        return null;
+    }
+    const typeDetails = idlConfig.types.filter((t) => t.name === typeName)[0];
+    return typeDetails;
 }

@@ -1,6 +1,6 @@
 import * as config from '../config.json';
 import { Idl, IdlTypeDef, Operation } from '../types';
-import { convertPascal, getFiltersForIDLType, getGqlTypeForIdlScalarType, getKeyForIdlObjectType } from '../utils';
+import { convertPascal, getFilterTypeForField, getGqlTypeForIdlScalarType, getKeyForIdlObjectType } from '../utils';
 
 /**
  * Get the types for each of the accounts associated with the program
@@ -23,8 +23,9 @@ export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
 
                     // ARRAY LIMITS
                     if (key.startsWith('[') && key.endsWith(']')) {
+                        const filterTypeForField = getFilterTypeForField(key, x.name, y.name);
                         return {
-                            [y['name'] + '(limit: Int)']: key,
+                            [y['name'] + `(limit: Int where: ${filterTypeForField})`]: key,
                         };
                     } else {
                         return {

@@ -4,7 +4,7 @@ import { getEnumTypes, getStructTypes } from '../types/index';
 import * as config from '../config.json';
 import { convertPascal, isSpecialEnum } from '../utils';
 import { readFile, writeFile } from 'fs/promises';
-import { getFilterInputsForBaseTypes, getAccountFilterTypes } from '../filters';
+import { getFilterInputsForBaseTypes, getAccountFilterTypes, getComplexArrayFilterTypes } from '../filters';
 import { getAccountOrderByTypes, getBaseInputForOrders } from '../orders';
 
 /**
@@ -158,6 +158,7 @@ export async function buildTypeDef(
     // Types for filters
     let baseInputFilters = getFilterInputsForBaseTypes();
     let accountFilterTypes = getAccountFilterTypes(idlConfig);
+    let complexArrayFilterTypes = getComplexArrayFilterTypes(idlConfig);
 
     // Type for Orders
     let accountOrderByTypes = getAccountOrderByTypes(idlConfig);
@@ -176,7 +177,12 @@ export async function buildTypeDef(
 
     let baseFilterInputsStr = await buildType(baseInputFilters, { isInputString: true });
     let accountFilterInputsStr = buildTypeForFilters(accountFilterTypes);
-    let filtersStr = baseFilterInputsStr + accountFilterInputsStr;
+
+    let complexArrayFilterInputsStr = '';
+    if (complexArrayFilterTypes.length > 0) {
+        complexArrayFilterInputsStr = buildTypeForFilters(complexArrayFilterTypes);
+    }
+    let filtersStr = baseFilterInputsStr + accountFilterInputsStr + complexArrayFilterInputsStr;
 
     let baseOrderInputStr = getBaseInputForOrders();
     let orderByInputStr = buildTypeForOrderBy(accountOrderByTypes);
