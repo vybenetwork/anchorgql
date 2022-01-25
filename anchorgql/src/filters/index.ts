@@ -289,11 +289,7 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                 } else {
                                                     const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
                                                     values.push({
-                                                        [field.name]:
-                                                            convertPascal(projectName) +
-                                                            '_' +
-                                                            scalarGQLType +
-                                                            '_Values_Filters',
+                                                        [field.name]: scalarGQLType,
                                                     });
                                                 }
                                             }
@@ -337,11 +333,7 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                         if (typeof fieldTypeStringified !== 'object') {
                                             const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
                                             values.push({
-                                                [field.name]:
-                                                    convertPascal(projectName) +
-                                                    '_' +
-                                                    scalarGQLType +
-                                                    '_Values_Filters',
+                                                [field.name]: scalarGQLType,
                                             });
                                         } else {
                                             if (Object.keys(field.type)[0] === 'defined') {

@@ -170,7 +170,7 @@
             "IDL_PATH": "./src/idls/vault.json"
         },
         {
-            "PROJECT_NAME": "drift_vault_mainnet",
+            "PROJECT_NAME": "drift_clearing_house_mainnet",
             "PROTOCOL": "drift",
             "NETWORK": "mainnet",
             "PROGRAM_ID": "dammHkt7jmytvbS3nHTxQNEcP59aE57nxwV21YdqEDN",

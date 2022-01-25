@@ -1,6 +1,6 @@
 {
     "projectName": "switchboard_switchboard_v2_d",
-    "protocol": "jupiter",
+    "protocol": "switchboard",
     "network": "devnet",
     "programID": "2TfB33aLaneQb5TNVwyDz3jSZXS6jdW2ARw1Dgf84XCG",
     "anchorProviderURL": "https://api.devnet.solana.com",
