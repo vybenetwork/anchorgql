@@ -351,6 +351,13 @@ export function getFilterTypeForField(key: string, typeName: string, fieldName: 
     }
 }
 
+/**
+ * Takes an array or vec type and returns the type details for a defined type if one is used
+ * in the compound type and a null otherwise
+ * @param field The vec or array type to get the defined type from
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns Type details for the defined type if one exists in vec or array type, null otherwise
+ */
 export function getDefinedTypeOfArrayOrVectorField(field: IdlField, idlConfig: Idl): IdlTypeDef | null {
     let typeName = '';
     if (

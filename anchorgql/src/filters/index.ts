@@ -241,9 +241,13 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
     return filters;
 }
 
+/**
+ * Get all the inputs required for to generate a filter for complex arrays.
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns Inputs for complex array in {@link Operation} format
+ */
 export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
     let projectName = config.projectName;
-    let nestedInputsToGenerate = [];
     let filters: Operation[] = [];
 
     let idlAccounts = idlConfig.accounts;
