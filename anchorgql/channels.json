@@ -192,6 +192,14 @@
             "PROGRAM_ID": "JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo",
             "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
             "IDL_PATH": "./src/idls/jupiter.json"
+        },
+        {
+            "PROJECT_NAME": "tribeca_govern_m",
+            "PROTOCOL": "tribeca",
+            "NETWORK": "mainnet",
+            "PROGRAM_ID": "Govz1VyoyLD5BL6CSCxUJLVLsQHRwjfFj1prNsdNg5Jw",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/govern.json"
         }
     ]
 }

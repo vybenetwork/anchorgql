@@ -286,7 +286,12 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                             key !== '[Int]' &&
                                                             key !== '[BigInt]' &&
                                                             key !== '[Boolean]' &&
-                                                            key !== '[Byte]'
+                                                            key !== '[Byte]' &&
+                                                            key !== 'String' &&
+                                                            key !== 'Int' &&
+                                                            key !== 'BigInt' &&
+                                                            key !== 'Boolean' &&
+                                                            key !== 'Byte'
                                                         ) {
                                                             key = getFilterTypeForField(
                                                                 key,
@@ -303,7 +308,12 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                             key !== '[Int]' &&
                                                             key !== '[BigInt]' &&
                                                             key !== '[Boolean]' &&
-                                                            key !== '[Byte]'
+                                                            key !== '[Byte]' &&
+                                                            key !== 'String' &&
+                                                            key !== 'Int' &&
+                                                            key !== 'BigInt' &&
+                                                            key !== 'Boolean' &&
+                                                            key !== 'Byte'
                                                         ) {
                                                             key = getFilterTypeForField(
                                                                 key,
