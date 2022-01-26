@@ -188,10 +188,6 @@ const resolvers = {
                 }
             }
 
-            if (args?.limit) {
-                data = data.slice(0, args.limit);
-            }
-
             if (args?.order_by) {
                 let orderBys: any[] = [['ROOT', Object.entries(args.order_by)]];
                 let orderBysAtCurrentLevel = orderBys;
@@ -219,6 +215,10 @@ const resolvers = {
                         }
                     }
                 }
+            }
+
+            if (args?.limit) {
+                data = data.slice(0, args.limit);
             }
 
             return data;
