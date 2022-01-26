@@ -161,7 +161,7 @@ function getUtilsTypeString(idlConfig: Idl): string {
     const projectName = config.projectName;
     const returnString = `\ntype ${
         convertPascal(projectName) + '_Utils'
-    } {\n\t parsedAccountInfo(account: ${convertPascal(projectName)}_Accounts data: String): JSON\n}`;
+    } {\n\t decodeAccountData(account: ${convertPascal(projectName)}_Accounts data: String): JSON\n}`;
     return returnString;
 }
 

@@ -132,7 +132,7 @@ const resolvers = {
     },
 
     __UTILITIES_TYPE_NAME__: {
-        parsedAccountInfo: async (parent, args) => {
+        decodeAccountData: async (parent, args) => {
             const baseHexBuffer = Buffer.from(args.data, 'hex');
             const base58String = bs58.encode(baseHexBuffer);
             const base58Buffer = bs58.decode(base58String);
