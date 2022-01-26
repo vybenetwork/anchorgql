@@ -280,10 +280,37 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                             for (let field of filterFields) {
                                                 if (typeof field.type === 'object') {
                                                     if ('array' in field.type) {
-                                                        const key = getKeyOrGQLTypeForIDLType(field.type.array[0]);
+                                                        let key = getKeyOrGQLTypeForIDLType(field.type.array[0]);
+                                                        if (
+                                                            key !== '[String]' &&
+                                                            key !== '[Int]' &&
+                                                            key !== '[BigInt]' &&
+                                                            key !== '[Boolean]' &&
+                                                            key !== '[Byte]'
+                                                        ) {
+                                                            key = getFilterTypeForField(
+                                                                key,
+                                                                filterTypeDetails.name,
+                                                                field.name,
+                                                            );
+                                                        }
+                                                        // if key isn't int or string or .. array, use the special name for it
                                                         values.push({ [field.name]: key });
                                                     } else if ('vec' in field.type) {
-                                                        const key = getKeyOrGQLTypeForIDLType(field.type.vec);
+                                                        let key = getKeyOrGQLTypeForIDLType(field.type.vec);
+                                                        if (
+                                                            key !== '[String]' &&
+                                                            key !== '[Int]' &&
+                                                            key !== '[BigInt]' &&
+                                                            key !== '[Boolean]' &&
+                                                            key !== '[Byte]'
+                                                        ) {
+                                                            key = getFilterTypeForField(
+                                                                key,
+                                                                filterTypeDetails.name,
+                                                                field.name,
+                                                            );
+                                                        }
                                                         values.push({ [field.name]: key });
                                                     }
                                                 } else {
