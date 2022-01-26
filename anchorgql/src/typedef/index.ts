@@ -136,6 +136,36 @@ export function buildTypeForOrderBy(mapping: Operation[]): string {
 }
 
 /**
+ * Get a string for an enum for account names for the program
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns A valid GraphQL enum for all accounts for the program
+ */
+function getEnumStringForAccounts(idlConfig: Idl): string {
+    const projectName = config.projectName;
+    let returnString = `\nenum ${convertPascal(projectName)}_Accounts {\n`;
+    if (idlConfig.accounts && idlConfig.accounts.length > 0) {
+        idlConfig.accounts.map((a) => {
+            returnString += '\t' + a.name + '\n';
+        });
+        returnString += '}\n';
+        return returnString;
+    } else return null;
+}
+
+/**
+ * Get the string for utilities for the program
+ * @param idlConfig The IDL File for the Smart Contract
+ * @returns A valid GraphQL string for utility methods for the API
+ */
+function getUtilsTypeString(idlConfig: Idl): string {
+    const projectName = config.projectName;
+    const returnString = `\ntype ${
+        convertPascal(projectName) + '_Utils'
+    } {\n\t parsedAccountInfo(account: ${convertPascal(projectName)}_Accounts data: String): JSON\n}`;
+    return returnString;
+}
+
+/**
  * A helper function to generate the GraphQL typedef file. It combines various methods from different modules to generate the SDL.
  * @param idlConfig The IDL File for the Smart Contract
  * @param typeDefTemplateFile Path to where the template file for typedefs is stored
@@ -170,10 +200,17 @@ export async function buildTypeDef(
     let accountStr = await buildType(account);
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
+    let enumAccountsStr = getEnumStringForAccounts(idlConfig);
+    let programsUtilsString = getUtilsTypeString(idlConfig);
     let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
-    } {\n\tmessage: String\n},`;
-    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType; /* + instructionInputTypesStr */
+    } {\n\tmessage: String\n}\n`;
+    let typesStr =
+        structTypesStr +
+        enumTypesStr +
+        additionalDataInfoType +
+        enumAccountsStr +
+        programsUtilsString; /* + instructionInputTypesStr */
 
     let baseFilterInputsStr = await buildType(baseInputFilters, { isInputString: true });
     let accountFilterInputsStr = buildTypeForFilters(accountFilterTypes);

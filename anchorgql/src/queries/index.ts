@@ -100,6 +100,9 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
         });
 
         accountNames.push({ config: 'Config' });
+        accountNames.push({
+            utils: convertPascal(projectName) + '_Utils',
+        });
         // const transactionsFilterName = projectName + '_Transactions(limit: Int)';
         // accountNames.push({
         //     [transactionsFilterName]: '[JSON]',

@@ -35,7 +35,8 @@ export async function buildResolvers(
     let codeString = split[0]
         .replace(/__URL__/g, url)
         .replace(/__PROJECTNAME__/g, 'program_' + projectName)
-        .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1));
+        .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1))
+        .replace(/__UTILITIES_TYPE_NAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Utils');
     if ('accounts' in idlConfig) {
         let accountNames = idlConfig['accounts'].map((x) => x['name']);
         for (let x of accountNames) {

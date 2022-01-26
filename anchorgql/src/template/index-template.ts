@@ -7,6 +7,7 @@ import { PublicKey } from '@solana/web3.js';
 import BN from 'bn.js';
 import { readFileSync } from 'fs';
 import { get } from 'lodash';
+import bs58 from 'bs58';
 import configVars from './config.json';
 
 const provider = Provider.env();
@@ -129,7 +130,27 @@ const resolvers = {
     Query: {
         __PROJECTNAME__: () => ({}),
     },
+
+    __UTILITIES_TYPE_NAME__: {
+        parsedAccountInfo: async (parent, args) => {
+            const baseHexBuffer = Buffer.from(args.data, 'hex');
+            const base58String = bs58.encode(baseHexBuffer);
+            const base58Buffer = bs58.decode(base58String);
+            try {
+                const data = client.coder.accounts.decode(args.account, base58Buffer);
+                return data;
+            } catch {
+                return {
+                    error: 'Failed to parse passed data for the selected account. Please ensure the correct account is selected and that data is a valid hex encoded string.',
+                };
+            }
+        },
+    },
+
     __ROOTNAME__: {
+        utils: async (parent, args) => {
+            return {};
+        },
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (parent, args) => {
             let data = await getAccountData('__ANCHORACCOUNTNAME__', args?.where?.publicKey?.eq ?? null);
