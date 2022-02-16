@@ -382,3 +382,31 @@ export function getDefinedTypeOfArrayOrVectorField(field: IdlField, idlConfig: I
     const typeDetails = idlConfig.types.filter((t) => t.name === typeName)[0];
     return typeDetails;
 }
+
+export function getAggregateTypeNameForArrayType(complexType: IdlTypeDef): Record<string, string> | null {
+    if (complexType.type.kind === 'struct') {
+        for (let field of complexType.type.fields) {
+            const gqlTypeForField = getKeyOrGQLTypeForIDLType(field.type);
+            if (!(gqlTypeForField.startsWith('[') && gqlTypeForField.endsWith(']'))) {
+            }
+        }
+    }
+    return null;
+}
+
+export function getAggregateTypeForField(key: string): string | null {
+    let projectName = config.projectName;
+    if (key === '[String]') {
+        return convertPascal(projectName) + '_' + 'String_Values_Filters';
+    } else if (key === '[Int]') {
+        return convertPascal(projectName) + '_' + 'Int_Values_Filters';
+    } else if (key === '[BigInt]') {
+        return convertPascal(projectName) + '_' + 'BigInt_Values_Filters';
+    } else if (key === '[Boolean]') {
+        return convertPascal(projectName) + '_' + 'Boolean_Values_Filters';
+    } else if (key === '[Byte]') {
+        return convertPascal(projectName) + '_' + 'Byte_Values_Filters';
+    } else {
+        return null;
+    }
+}

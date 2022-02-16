@@ -1,6 +1,12 @@
 import * as config from '../config.json';
 import { Idl, IdlTypeDef, Operation } from '../types';
-import { convertPascal, getFilterTypeForField, getGqlTypeForIdlScalarType, getKeyForIdlObjectType } from '../utils';
+import {
+    convertPascal,
+    //getAggregateTypeForComplexType,
+    getFilterTypeForField,
+    getGqlTypeForIdlScalarType,
+    getKeyForIdlObjectType,
+} from '../utils';
 
 /**
  * Get the types for each of the accounts associated with the program
@@ -33,6 +39,9 @@ export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
                         };
                     }
                 });
+
+                //const aggregateType = name + '_Aggregates';
+                fields.push({ aggregate: name + '_Aggregates' });
                 return [name, Object.assign({}, ...fields)];
             });
             return mapping;

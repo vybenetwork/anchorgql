@@ -154,6 +154,42 @@ const resolvers = {
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (parent, args) => {
             let data = await getAccountData('__ANCHORACCOUNTNAME__', args?.where?.publicKey?.eq ?? null);
+            if (data.length > 0) {
+                let aggregateData = {};
+                Object.entries(data[0].account).map(([k, v]) => {
+                    if (typeof v === 'number' || typeof v === 'bigint') {
+                        aggregateData[k] = {
+                            count: data.length,
+                            min: Math.min(data.map((d) => d.account[k])),
+                            max: Math.max(data.map((d) => d.account[k])),
+                            average:
+                                data.reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.account[k],
+                                    0,
+                                ) / data.length,
+                        };
+                    } else if (typeof v === 'string') {
+                        aggregateData[k] = {
+                            count: data.length,
+                        };
+                    } else if (typeof v === 'boolean') {
+                        aggregateData[k] = {
+                            count: data.length,
+                        };
+                    }
+                });
+                if (Object.keys(aggregateData).length > 0) {
+                    data = data.map((d) => {
+                        return {
+                            ...d,
+                            account: {
+                                ...d.account,
+                                aggregate: aggregateData,
+                            },
+                        };
+                    });
+                }
+            }
             if (args?.where) {
                 if (args.where.publicKey?.eq !== undefined) {
                     data = data.filter((d) => args.where.publicKey.eq === d.publicKey);

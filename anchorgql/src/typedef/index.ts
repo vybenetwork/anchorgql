@@ -6,6 +6,7 @@ import { convertPascal, isSpecialEnum } from '../utils';
 import { readFile, writeFile } from 'fs/promises';
 import { getFilterInputsForBaseTypes, getAccountFilterTypes, getComplexArrayFilterTypes } from '../filters';
 import { getAccountOrderByTypes, getBaseInputForOrders } from '../orders';
+import { getAccountAggregateTypes, getBaseAggregateTypes } from '../aggregates_and_distincts';
 
 /**
  * Get an SDL compitable GraphQL Type/Input from the {@link Operation} type
@@ -152,6 +153,34 @@ function getEnumStringForAccounts(idlConfig: Idl): string {
     } else return null;
 }
 
+export function buildTypeForAggregates(mapping: Operation[]): string {
+    if (mapping.length > 0) {
+        const projectName = config.projectName;
+        let stringType = mapping.map((x) => {
+            if (Object.keys(x[1]).length > 0) {
+                let returnType = `\ntype ${x[0]} {`;
+                for (let k of Object.keys(x[1])) {
+                    let fType = x[1][k];
+                    if (fType === 'String') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_String_Aggregates';
+                    } else if (fType === 'Int') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_Int_Aggregates';
+                    } else if (fType === 'BigInt') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_BigInt_Aggregates';
+                    } else if (fType === 'Boolean') {
+                        returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_Boolean_Aggregates';
+                    }
+                }
+                returnType += '\n} \n';
+                return returnType;
+            }
+        });
+        return stringType.join('\n');
+    }
+
+    return;
+}
+
 /**
  * Get the string for utilities for the program
  * @param idlConfig The IDL File for the Smart Contract
@@ -193,6 +222,10 @@ export async function buildTypeDef(
     // Type for Orders
     let accountOrderByTypes = getAccountOrderByTypes(idlConfig);
 
+    // Types for aggregates
+    let baseAggregateTypes = getBaseAggregateTypes();
+    let accountAggregateTypes = getAccountAggregateTypes(idlConfig);
+
     // Process the types to create valid gql strings
     let queryStr = await buildType(query, { isQueryString: true });
     let rootStr = await buildType(root);
@@ -225,7 +258,12 @@ export async function buildTypeDef(
     let orderByInputStr = buildTypeForOrderBy(accountOrderByTypes);
     let orderStr = baseOrderInputStr + orderByInputStr;
 
-    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr + filtersStr + orderStr;
+    let baseAggregatesTypesStr = await buildType(baseAggregateTypes);
+    let accountAggregatesTypesStr = buildTypeForAggregates(accountAggregateTypes);
+
+    let aggregatesStr = baseAggregatesTypesStr + accountAggregatesTypesStr;
+
+    let typeDefs = queryStr + rootStr + accountRootStr + accountStr + typesStr + filtersStr + orderStr + aggregatesStr;
 
     let data = await readFile(typeDefTemplateFile, 'utf8');
     const split = data.split('///--------------------///');

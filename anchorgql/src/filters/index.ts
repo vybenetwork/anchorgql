@@ -247,7 +247,6 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
  * @returns Inputs for complex array in {@link Operation} format
  */
 export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
-    let projectName = config.projectName;
     let filters: Operation[] = [];
 
     let idlAccounts = idlConfig.accounts;
