@@ -1,5 +1,11 @@
 import { Idl, Operation } from '../types';
-import { convertPascal, getKeyOrGQLTypeForIDLType, isDefinedTypeUsedInAccounts, isSpecialEnum } from '../utils';
+import {
+    convertPascal,
+    getKeyOrGQLTypeForIDLType,
+    isDefinedTypeUsedInAccounts,
+    isSpecialEnum,
+    shouldGenerateFilterForAnAccount,
+} from '../utils';
 import * as config from '../config.json';
 import { getEnumTypes } from '../types/index';
 import { readFile, writeFile } from 'fs/promises';
@@ -57,12 +63,16 @@ export async function buildResolvers(
         projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Account_Aggregates',
     );
     if ('accounts' in idlConfig) {
-        let accountNames = idlConfig['accounts'].map((x) => x['name']);
-        for (let x of accountNames) {
-            const acc = projectName + '_' + x;
-            let result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
-            result = result.replace(/__ACCOUNTNAME__/g, acc);
-            codeString = codeString.concat(result);
+        for (let x of idlConfig.accounts) {
+            if (shouldGenerateFilterForAnAccount(x, idlConfig)) {
+                const acc = projectName + '_' + x.name;
+                let result = split[1].replace(
+                    /__ANCHORACCOUNTNAME__/g,
+                    x.name.charAt(0).toLowerCase() + x.name.slice(1),
+                );
+                result = result.replace(/__ACCOUNTNAME__/g, acc);
+                codeString = codeString.concat(result);
+            }
         }
         codeString = codeString.concat(split[2]);
     } else {

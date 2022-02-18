@@ -410,3 +410,31 @@ export function getAggregateTypeForField(key: string): string | null {
         return null;
     }
 }
+
+export function shouldGenerateFilterForAnAccount(account: IdlTypeDef, idlConfig: Idl): boolean {
+    let fields = [];
+    if (account.type.kind === 'struct') {
+        const accountFields = account.type.fields;
+        if (accountFields) {
+            for (let field of accountFields) {
+                const fieldTypeStringified = field.type as string;
+                if (typeof fieldTypeStringified !== 'object') {
+                    const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
+                    fields.push({ [field.name]: scalarGQLType });
+                } else {
+                    if (Object.keys(field.type)[0] === 'defined') {
+                        const definedTypeDetails = idlConfig.types.filter((t) => t.name === field.type['defined'])[0];
+                        if (definedTypeDetails.type.kind !== 'enum') {
+                            const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
+                            fields.push({ [field.name]: objectGqlType + '_Filters' });
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (fields.length > 0) {
+        return true;
+    }
+    return false;
+}

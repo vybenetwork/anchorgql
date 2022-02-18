@@ -1,6 +1,12 @@
 import * as config from '../config.json';
 import { Idl, IdlTypeDef, Operation } from '../types';
-import { convertPascal, getFilterTypeForField, getGqlTypeForIdlScalarType, getKeyForIdlObjectType } from '../utils';
+import {
+    convertPascal,
+    getFilterTypeForField,
+    getGqlTypeForIdlScalarType,
+    getKeyForIdlObjectType,
+    shouldGenerateFilterForAnAccount,
+} from '../utils';
 
 /**
  * Get the types for each of the accounts associated with the program
@@ -107,10 +113,15 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
                 }_OrderBy limit: Int = 10)`]: '[' + convertPascal(projectName) + '_' + x.name + ']',
             };
             accountNames.push(accountName);
-            aggregateNames.push({
-                [projectName + '_' + x.name + `(where: ${convertPascal(projectName) + '_' + x.name}_Account_Filters)`]:
-                    convertPascal(projectName) + '_' + x.name + '_Account_Aggregates',
-            });
+            if (shouldGenerateFilterForAnAccount(x, idlConfig)) {
+                aggregateNames.push({
+                    [projectName +
+                    '_' +
+                    x.name +
+                    `(where: ${convertPascal(projectName) + '_' + x.name}_Account_Filters)`]:
+                        convertPascal(projectName) + '_' + x.name + '_Account_Aggregates',
+                });
+            }
         });
 
         accountNames.push({ config: 'Config' });
