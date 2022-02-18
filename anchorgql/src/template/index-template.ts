@@ -108,6 +108,7 @@ function applyOrderBy(data, property, propertyOrderBys) {
 
 function isFilter(objectToCheck): boolean {
     return (
+        typeof objectToCheck === 'object' &&
         Object.keys(objectToCheck)
             .filter((k) => k !== 'eq')
             .filter((k) => k !== 'neq')
@@ -116,12 +117,37 @@ function isFilter(objectToCheck): boolean {
             .filter((k) => k !== 'contains')
             .filter((k) => k !== 'doesNotContain')
             .filter((k) => k !== 'startsWith')
-            .filter((k) => k !== 'endsWith').length === 0
+            .filter((k) => k !== 'endsWith')
+            .filter((k) => k !== 'distinct').length === 0
     );
 }
 
 function isOrderBy(objectToCheck): boolean {
     return Object.keys(objectToCheck).filter((k) => k !== 'sortOrder').length === 0;
+}
+
+function getDistinctFilterPaths(whereFilter: any): string[] {
+    let distinctFilters = [];
+    let filters: any[] = [['ROOT', Object.entries(whereFilter)]];
+    let filtersAtCurrentLevel = filters;
+    while (filtersAtCurrentLevel.length > 0) {
+        for (let fieldFilters of filtersAtCurrentLevel) {
+            const pendingFilters = [];
+            let propertyFilters = fieldFilters[1];
+            for (let [property, propertyFilter] of propertyFilters) {
+                if (isFilter(propertyFilter) && 'distinct' in propertyFilter && propertyFilter['distinct'] === true) {
+                    distinctFilters.push((fieldFilters[0] + '.' + property).replace('ROOT.', ''));
+                } else {
+                    pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
+                }
+            }
+            filtersAtCurrentLevel = pendingFilters;
+            if (filtersAtCurrentLevel.length === 0) {
+                break;
+            }
+        }
+    }
+    return distinctFilters;
 }
 
 const resolvers = {
@@ -162,6 +188,11 @@ const resolvers = {
 
                 if (args.where.publicKey?.neq !== undefined) {
                     data = data.filter((d) => args.where.publicKey.neq !== d.publicKey);
+                }
+
+                const distinctFilterPaths = getDistinctFilterPaths(args.where);
+                for (let dFilterPath of distinctFilterPaths) {
+                    data = [...new Map(data.map((item) => [get(item, dFilterPath), item])).values()];
                 }
 
                 let filters: any[] = [['ROOT', Object.entries(args.where)]];
@@ -241,6 +272,11 @@ const resolvers = {
             let data = await getAccountData('__ANCHORACCOUNTNAME__', args?.where?.publicKey?.eq ?? null);
 
             if (args?.where) {
+                const distinctFilterPaths = getDistinctFilterPaths(args.where);
+                for (let dFilterPath of distinctFilterPaths) {
+                    data = [...new Map(data.map((item) => [get(item, 'account.' + dFilterPath), item])).values()];
+                }
+
                 let filters: any[] = [['ROOT', Object.entries(args.where)]];
                 let filtersAtCurrentLevel = filters;
                 while (filtersAtCurrentLevel.length > 0) {
@@ -248,7 +284,7 @@ const resolvers = {
                         const pendingFilters = [];
                         let propertyFilters = fieldFilters[1];
                         for (let [property, propertyFilter] of propertyFilters) {
-                            if (isFilter(propertyFilter)) {
+                            if (isFilter(propertyFilter) && !('distinct' in propertyFilter)) {
                                 data = applyFilter(
                                     data,
                                     'account.' + (fieldFilters[0] + '.' + property).replace('ROOT.', ''),

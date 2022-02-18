@@ -25,6 +25,7 @@ export function getFilterInputsForBaseTypes(): Operation[] {
             doesNotContain: 'String',
             startsWith: 'String',
             endsWith: 'String',
+            distinct: 'Boolean',
         },
     ];
 
@@ -42,6 +43,7 @@ export function getFilterInputsForBaseTypes(): Operation[] {
             neq: 'Int',
             gt: 'Int',
             lt: 'Int',
+            distinct: 'Boolean',
         },
     ];
 
@@ -59,6 +61,7 @@ export function getFilterInputsForBaseTypes(): Operation[] {
             neq: 'BigInt',
             gt: 'BigInt',
             lt: 'BigInt',
+            distinct: 'Boolean',
         },
     ];
 
