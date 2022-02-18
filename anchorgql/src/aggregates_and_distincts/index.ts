@@ -64,7 +64,7 @@ export function getAccountAggregateTypes(idlConfig: Idl): Operation[] {
             }
             if (fields.length > 0) {
                 aggregates.push([
-                    convertPascal(projectName) + '_' + account.name + 'Account_Aggregates',
+                    convertPascal(projectName) + '_' + account.name + '_Account_Aggregates',
                     Object.assign({}, ...fields),
                 ]);
             }

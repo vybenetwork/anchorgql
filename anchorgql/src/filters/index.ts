@@ -8,6 +8,7 @@ import {
     getFilterTypeForField,
     getDefinedTypeOfArrayOrVectorField,
 } from '../utils';
+import { getBaseAggregateTypes } from '../aggregates_and_distincts';
 
 /**
  * Get the inputs for filters for different types
@@ -138,6 +139,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
     let projectName = config.projectName;
     const accounts = idlConfig.accounts;
     let nestedInputsToGenerate = [];
+    let aggregateInputsToGenerate = [];
     let filters: Operation[] = [];
     if (accounts) {
         for (let account of accounts) {
@@ -174,6 +176,10 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                     }
                 }
                 if (fields.length > 0) {
+                    fields.push({
+                        aggregate: convertPascal(projectName) + '_' + account.name + '_Account_Aggregate_Filters',
+                    });
+                    aggregateInputsToGenerate.push(account.name);
                     filters.push([
                         convertPascal(projectName) + '_' + account.name + '_Account_Filters',
                         Object.assign({}, ...fields),
@@ -235,6 +241,57 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
         });
         if (values.length > 0) {
             filters.push([name, Object.assign({}, ...values)]);
+        }
+    }
+    let baseAggregateFilterTypesToGenerate = [];
+    const baseAggregateTypes = getBaseAggregateTypes();
+    for (let a of aggregateInputsToGenerate) {
+        const accountDetails = idlConfig.accounts.filter((ac) => ac.name === a)[0];
+        if (accountDetails) {
+            let fields = [];
+            if (accountDetails.type.kind === 'struct') {
+                const accountFields = accountDetails.type.fields;
+                for (let field of accountFields) {
+                    const fieldTypeStringified = field.type as string;
+                    if (typeof fieldTypeStringified !== 'object') {
+                        const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
+                        if (
+                            scalarGQLType === 'Int' ||
+                            scalarGQLType === 'BigInt' ||
+                            scalarGQLType === 'String' ||
+                            scalarGQLType === 'Boolean'
+                        ) {
+                            fields.push({
+                                [field.name]: convertPascal(projectName) + '_' + scalarGQLType + '_Aggregate_Filter',
+                            });
+                        }
+
+                        baseAggregateFilterTypesToGenerate.push(scalarGQLType);
+                    }
+                }
+            }
+            if (fields.length > 0) {
+                filters.push([
+                    convertPascal(projectName) + '_' + accountDetails.name + '_Account_Aggregate_Filters',
+                    Object.assign({}, ...fields),
+                ]);
+            }
+        }
+    }
+
+    for (let sType of [...new Set(baseAggregateFilterTypesToGenerate)]) {
+        if (sType === 'Int' || sType === 'BigInt' || sType === 'String' || sType === 'Boolean') {
+            const aggregateTypeDetails = baseAggregateTypes.filter(
+                (b) => b[0] === convertPascal(projectName) + '_' + sType + '_Aggregates',
+            )[0];
+            let sFields = [];
+            Object.entries(aggregateTypeDetails[1]).map(([k, v]) => {
+                sFields.push({ [k]: v });
+            });
+            filters.push([
+                convertPascal(projectName) + '_' + sType + '_Aggregate_Filter',
+                Object.assign({}, ...sFields),
+            ]);
         }
     }
 

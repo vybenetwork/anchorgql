@@ -128,7 +128,8 @@ const resolvers = {
     BigInt: BigIntResolver,
     Byte: ByteResolver,
     Query: {
-        __PROJECTNAME__: () => ({}),
+        __ACCOUNTS_ROOT_QUERY__: () => ({}),
+        __ACCOUNT_AGGREGATES_ROOT_QUERY__: () => ({}),
     },
 
     __UTILITIES_TYPE_NAME__: {
@@ -154,42 +155,6 @@ const resolvers = {
         ///----------ACCOUNT_RESOLVERS----------///
         __ACCOUNTNAME__: async (parent, args) => {
             let data = await getAccountData('__ANCHORACCOUNTNAME__', args?.where?.publicKey?.eq ?? null);
-            if (data.length > 0) {
-                let aggregateData = {};
-                Object.entries(data[0].account).map(([k, v]) => {
-                    if (typeof v === 'number' || typeof v === 'bigint') {
-                        aggregateData[k] = {
-                            count: data.length,
-                            min: Math.min(data.map((d) => d.account[k])),
-                            max: Math.max(data.map((d) => d.account[k])),
-                            average:
-                                data.reduce(
-                                    (previousValue, currentValue) => previousValue + currentValue.account[k],
-                                    0,
-                                ) / data.length,
-                        };
-                    } else if (typeof v === 'string') {
-                        aggregateData[k] = {
-                            count: data.length,
-                        };
-                    } else if (typeof v === 'boolean') {
-                        aggregateData[k] = {
-                            count: data.length,
-                        };
-                    }
-                });
-                if (Object.keys(aggregateData).length > 0) {
-                    data = data.map((d) => {
-                        return {
-                            ...d,
-                            account: {
-                                ...d.account,
-                                aggregate: aggregateData,
-                            },
-                        };
-                    });
-                }
-            }
             if (args?.where) {
                 if (args.where.publicKey?.eq !== undefined) {
                     data = data.filter((d) => args.where.publicKey.eq === d.publicKey);
@@ -259,29 +224,8 @@ const resolvers = {
 
             return data;
         },
+
         ///----------ACCOUNT_RESOLVERS----------///
-
-        // __TRANSACTION_NAME__: async (parent, args) => {
-        //     let sigatures = await provider.connection.getSignaturesForAddress(
-        //         programId,
-        //         {
-        //             limit: args?.limit ? Math.min(args.limit, 25) : 10,
-        //         },
-        //         'finalized',
-        //     );
-
-        //     if (args?.limit) {
-        //         sigatures = sigatures.slice(0, Math.min(args.limit, 25));
-        //     }
-        //     const transactions = await Promise.all(
-        //         sigatures.map((s) => {
-        //             return provider.connection.getTransaction(s.signature, {
-        //                 commitment: 'finalized',
-        //             });
-        //         }),
-        //     );
-        //     return transactions;
-        // },
 
         config: async () => {
             return {
@@ -289,6 +233,74 @@ const resolvers = {
                 programId: configVars.programID,
             };
         },
+    },
+
+    __ACCOUNT_AGGREGATE_ROOT_NAME__: {
+        ///----------ACCOUNT_AGGREGATE_RESOLVERS----------///
+        __ACCOUNTNAME__: async (parent, args) => {
+            let data = await getAccountData('__ANCHORACCOUNTNAME__', args?.where?.publicKey?.eq ?? null);
+
+            if (args?.where) {
+                let filters: any[] = [['ROOT', Object.entries(args.where)]];
+                let filtersAtCurrentLevel = filters;
+                while (filtersAtCurrentLevel.length > 0) {
+                    for (let fieldFilters of filtersAtCurrentLevel) {
+                        const pendingFilters = [];
+                        let propertyFilters = fieldFilters[1];
+                        for (let [property, propertyFilter] of propertyFilters) {
+                            if (isFilter(propertyFilter)) {
+                                data = applyFilter(
+                                    data,
+                                    'account.' + (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
+                                    propertyFilter,
+                                );
+                            } else {
+                                pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
+                            }
+                        }
+                        filtersAtCurrentLevel = pendingFilters;
+                        if (filtersAtCurrentLevel.length === 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (data.length > 0) {
+                let aggregateData = {};
+                Object.entries(data[0].account).map(([k, v]) => {
+                    if (typeof v === 'number' || typeof v === 'bigint') {
+                        aggregateData[k] = {
+                            count: data.length,
+                            min: data.reduce(
+                                (previous, current) => (current.account[k] < previous ? current.account[k] : previous),
+                                0,
+                            ),
+                            max: data.reduce(
+                                (previous, current) => (current.account[k] > previous ? current.account[k] : previous),
+                                0,
+                            ),
+                            average:
+                                data.reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.account[k],
+                                    0,
+                                ) / data.length,
+                        };
+                    } else if (typeof v === 'string') {
+                        aggregateData[k] = {
+                            count: data.length,
+                        };
+                    } else if (typeof v === 'boolean') {
+                        aggregateData[k] = {
+                            count: data.length,
+                        };
+                    }
+                });
+                return aggregateData;
+            }
+            return {};
+        },
+        ///----------ACCOUNT_AGGREGATE_RESOLVERS----------///
     },
 
     ///----------ARRAY_FIELD_RESOLVERS----------///

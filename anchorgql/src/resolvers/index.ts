@@ -31,18 +31,37 @@ export async function buildResolvers(
     let url = config.anchorProviderURL;
     // ACCOUNT SETUP
     let data = await readFile(indexTemplateFile, 'utf8');
-    var split = data.split('///----------ACCOUNT_RESOLVERS----------///');
+    let split = data.split('///----------ACCOUNT_RESOLVERS----------///');
     let codeString = split[0]
         .replace(/__URL__/g, url)
-        .replace(/__PROJECTNAME__/g, 'program_' + projectName)
-        .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1))
+        .replace(/__ACCOUNTS_ROOT_QUERY__/g, 'program_' + projectName + '_Accounts')
+        .replace(/__ACCOUNT_AGGREGATES_ROOT_QUERY__/g, 'program_' + projectName + '_Account_Aggregates')
+        .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Accounts')
         .replace(/__UTILITIES_TYPE_NAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Utils');
     if ('accounts' in idlConfig) {
         let accountNames = idlConfig['accounts'].map((x) => x['name']);
         for (let x of accountNames) {
-            let acc = projectName + '_' + x;
-            var result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
-            var result = result.replace(/__ACCOUNTNAME__/g, acc);
+            const acc = projectName + '_' + x;
+            let result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
+            result = result.replace(/__ACCOUNTNAME__/g, acc);
+            codeString = codeString.concat(result);
+        }
+        codeString = codeString.concat(split[2]);
+    } else {
+        codeString = codeString.concat(split[2]);
+    }
+
+    split = codeString.split('///----------ACCOUNT_AGGREGATE_RESOLVERS----------///');
+    codeString = split[0].replace(
+        /__ACCOUNT_AGGREGATE_ROOT_NAME__/g,
+        projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Account_Aggregates',
+    );
+    if ('accounts' in idlConfig) {
+        let accountNames = idlConfig['accounts'].map((x) => x['name']);
+        for (let x of accountNames) {
+            const acc = projectName + '_' + x;
+            let result = split[1].replace(/__ANCHORACCOUNTNAME__/g, x.charAt(0).toLowerCase() + x.slice(1));
+            result = result.replace(/__ACCOUNTNAME__/g, acc);
             codeString = codeString.concat(result);
         }
         codeString = codeString.concat(split[2]);

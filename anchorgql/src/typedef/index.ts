@@ -143,7 +143,7 @@ export function buildTypeForOrderBy(mapping: Operation[]): string {
  */
 function getEnumStringForAccounts(idlConfig: Idl): string {
     const projectName = config.projectName;
-    let returnString = `\nenum ${convertPascal(projectName)}_Accounts {\n`;
+    let returnString = `\nenum ${convertPascal(projectName)}_Account_Names {\n`;
     if (idlConfig.accounts && idlConfig.accounts.length > 0) {
         idlConfig.accounts.map((a) => {
             returnString += '\t' + a.name + '\n';
@@ -190,7 +190,7 @@ function getUtilsTypeString(idlConfig: Idl): string {
     const projectName = config.projectName;
     const returnString = `\ntype ${
         convertPascal(projectName) + '_Utils'
-    } {\n\t decodeAccountData(account: ${convertPascal(projectName)}_Accounts data: String): JSON\n}`;
+    } {\n\t decodeAccountData(account: ${convertPascal(projectName)}_Account_Names data: String): JSON\n}`;
     return returnString;
 }
 

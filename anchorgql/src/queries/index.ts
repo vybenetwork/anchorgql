@@ -1,12 +1,6 @@
 import * as config from '../config.json';
 import { Idl, IdlTypeDef, Operation } from '../types';
-import {
-    convertPascal,
-    //getAggregateTypeForComplexType,
-    getFilterTypeForField,
-    getGqlTypeForIdlScalarType,
-    getKeyForIdlObjectType,
-} from '../utils';
+import { convertPascal, getFilterTypeForField, getGqlTypeForIdlScalarType, getKeyForIdlObjectType } from '../utils';
 
 /**
  * Get the types for each of the accounts associated with the program
@@ -40,8 +34,6 @@ export async function getAccountTypes(idlConfig: Idl): Promise<Operation[]> {
                     }
                 });
 
-                //const aggregateType = name + '_Aggregates';
-                fields.push({ aggregate: name + '_Aggregates' });
                 return [name, Object.assign({}, ...fields)];
             });
             return mapping;
@@ -63,7 +55,6 @@ export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> 
     if ('accounts' in idlConfig) {
         let mapping: Operation[] = idlConfig.accounts.map((x: IdlTypeDef) => {
             let name = convertPascal(projectName) + '_' + x.name;
-
             let fields = {
                 publicKey: 'String',
                 account: convertPascal(projectName) + '_' + x.name + 'Account',
@@ -82,8 +73,17 @@ export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> 
  */
 export async function getQueryType(): Promise<Operation[]> {
     const projectName = config.projectName;
-    let subgraph = 'program_' + projectName;
-    return [['Query', { [subgraph]: convertPascal(projectName) }]];
+    let accountsSubGraph = 'program_' + projectName + '_Accounts';
+    let accountAggregatesSubGraph = 'program_' + projectName + '_Account_Aggregates';
+    return [
+        [
+            'Query',
+            {
+                [accountsSubGraph]: convertPascal(projectName) + '_Accounts',
+                [accountAggregatesSubGraph]: convertPascal(projectName) + '_Account_Aggregates',
+            },
+        ],
+    ];
 }
 
 /**
@@ -94,6 +94,7 @@ export async function getQueryType(): Promise<Operation[]> {
 export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
     let accountNames = [];
+    let aggregateNames = [];
 
     if ('accounts' in idlConfig) {
         idlConfig.accounts.map((x: IdlTypeDef) => {
@@ -106,17 +107,21 @@ export async function getRootType(idlConfig: Idl): Promise<Operation[]> {
                 }_OrderBy limit: Int = 10)`]: '[' + convertPascal(projectName) + '_' + x.name + ']',
             };
             accountNames.push(accountName);
+            aggregateNames.push({
+                [projectName + '_' + x.name + `(where: ${convertPascal(projectName) + '_' + x.name}_Account_Filters)`]:
+                    convertPascal(projectName) + '_' + x.name + '_Account_Aggregates',
+            });
         });
 
         accountNames.push({ config: 'Config' });
         accountNames.push({
             utils: convertPascal(projectName) + '_Utils',
         });
-        // const transactionsFilterName = projectName + '_Transactions(limit: Int)';
-        // accountNames.push({
-        //     [transactionsFilterName]: '[JSON]',
-        // });
-        return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
+
+        return [
+            [convertPascal(projectName) + '_Accounts', Object.assign({}, ...accountNames)],
+            [convertPascal(projectName) + '_Account_Aggregates', Object.assign({}, ...aggregateNames)],
+        ];
     } else {
         accountNames.push({ config: 'Config' });
         return [[projectName.charAt(0).toUpperCase() + projectName.slice(1), Object.assign({}, ...accountNames)]];
