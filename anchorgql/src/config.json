@@ -4,7 +4,7 @@
     "network": "mainnet",
     "programID": "SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f",
     "anchorProviderURL": "https://vybe.genesysgo.net",
-    "idlPath": "./src/idls/a.json",
+    "idlPath": "./src/idls/switchboard.json",
     "anchorVersion": "0.14.0",
     "idl": null,
     "port": 51305,
