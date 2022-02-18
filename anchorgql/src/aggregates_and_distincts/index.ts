@@ -22,6 +22,7 @@ export function getBaseAggregateTypes(): Operation[] {
             min: 'Int',
             max: 'Int',
             average: 'Float',
+            sum: 'Float',
         },
     ];
 
@@ -32,6 +33,7 @@ export function getBaseAggregateTypes(): Operation[] {
             min: 'BigInt',
             max: 'BigInt',
             average: 'String',
+            sum: 'String',
         },
     ];
 

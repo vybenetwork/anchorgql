@@ -321,6 +321,10 @@ const resolvers = {
                                     (previousValue, currentValue) => previousValue + currentValue.account[k],
                                     0,
                                 ) / data.length,
+                            sum: data.reduce(
+                                (previousValue, currentValue) => previousValue + currentValue.account[k],
+                                0,
+                            ),
                         };
                     } else if (typeof v === 'string') {
                         aggregateData[k] = {
