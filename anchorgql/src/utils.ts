@@ -172,10 +172,26 @@ function getDefinedTypesNestedInADefinedTypeField(idlField: IdlField | IdlType, 
     let definedFieldTypeName = '';
     // type is IDL Field
     if (typeof idlField === 'object' && 'name' in idlField && 'type' in idlField) {
-        if (!(typeof idlField.type === 'object') || !('defined' in idlField.type)) {
+        if (!(typeof idlField.type === 'object')) {
             return [];
         }
-        definedFieldTypeName = idlField.type.defined;
+        if ('defined' in idlField.type) {
+            definedFieldTypeName = idlField.type.defined;
+        } else if (
+            'array' in idlField.type &&
+            typeof idlField.type.array[0] === 'object' &&
+            'defined' in idlField.type.array[0]
+        ) {
+            definedFieldTypeName = idlField.type.array[0].defined;
+            const typeDetails = idlConfig.types.filter((t) => t.name === definedFieldTypeName)[0];
+            definedTypes = definedTypes.concat(typeDetails);
+        } else if ('vec' in idlField.type && typeof idlField.type.vec === 'object' && 'defined' in idlField.type.vec) {
+            definedFieldTypeName = idlField.type.vec.defined;
+            const typeDetails = idlConfig.types.filter((t) => t.name === definedFieldTypeName)[0];
+            definedTypes = definedTypes.concat(typeDetails);
+        } else {
+            return [];
+        }
     } else {
         if (!(typeof idlField === 'object') || !('defined' in idlField)) {
             return [];
@@ -214,7 +230,17 @@ export function definedTypeNameUsedInAnAccountField(field: IdlType, typeName: st
         const nestedDefinedTypesToCheck = getDefinedTypesNestedInADefinedTypeField(field, idlConfig);
         if (
             nestedDefinedTypesToCheck.some(
-                (n) => typeof n.type === 'object' && 'defined' in n.type && n.type.defined === typeName,
+                (n) =>
+                    typeof n.type === 'object' &&
+                    (('defined' in n.type && n.type.defined === typeName) ||
+                        ('array' in n.type &&
+                            typeof n.type.array[0] === 'object' &&
+                            'defined' in n.type.array[0] &&
+                            n.type.array[0].defined === typeName) ||
+                        ('vec' in n.type &&
+                            typeof n.type.vec === 'object' &&
+                            'defined' in n.type.vec &&
+                            n.type.vec.defined === typeName)),
             )
         ) {
             return true;

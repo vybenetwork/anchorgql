@@ -13,6 +13,7 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
     let typeArr: Operation[] = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
+        let typeUsed = isDefinedTypeUsedInAccounts('AccountMetaZC', idlConfig);
         let idlStructTypes = idlTypes.filter(
             (x) => x.type.kind === 'struct' && isDefinedTypeUsedInAccounts(x.name, idlConfig),
         );
@@ -23,10 +24,36 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
                 // ARRAY LIMITS
                 if (key.startsWith('[') && key.endsWith(']')) {
-                    const filterTypeForField = getFilterTypeForField(key, x.name, y.name);
-                    return {
-                        [y['name'] + `(limit: Int where: ${filterTypeForField})`]: key,
-                    };
+                    let isStruct = false;
+                    if (
+                        typeof y.type === 'object' &&
+                        'array' in y.type &&
+                        typeof y.type.array[0] === 'object' &&
+                        'defined' in y.type.array[0]
+                    ) {
+                        const typeName = y.type.array[0].defined;
+                        const typeDetails = idlConfig.types.filter((t) => t.name === typeName)[0];
+                        isStruct = typeDetails.type.kind === 'struct';
+                    } else if (
+                        typeof y.type === 'object' &&
+                        'vec' in y.type &&
+                        typeof y.type.vec === 'object' &&
+                        'defined' in y.type.vec
+                    ) {
+                        const typeName = y.type.vec.defined;
+                        const typeDetails = idlConfig.types.filter((t) => t.name === typeName)[0];
+                        isStruct = typeDetails.type.kind === 'struct';
+                    }
+                    if (isStruct) {
+                        const filterTypeForField = getFilterTypeForField(key, x.name, y.name);
+                        return {
+                            [y['name'] + `(limit: Int where: ${filterTypeForField})`]: key,
+                        };
+                    } else {
+                        return {
+                            [y['name']]: key,
+                        };
+                    }
                 } else {
                     return {
                         [y['name']]: key,

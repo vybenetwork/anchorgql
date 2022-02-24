@@ -129,6 +129,35 @@ function getFilterInputsForObjectType(idlType: IdlType, idlConfig: Idl): Operati
                 }
             }
         }
+    } else if (typeof idlType === 'object' && ('array' in idlType || 'vec' in idlType)) {
+        let typeDetails = null;
+        if ('array' in idlType && typeof idlType['array'][0] === 'object' && 'defined' in idlType['array'][0]) {
+            typeDetails = idlConfig.types.filter((t) => t.name === idlType.array[0]['defined'])[0];
+        } else if ('vec' in idlType && typeof idlType['vec'] === 'object' && 'defined' in idlType['vec']) {
+            typeDetails = idlConfig.types.filter((t) => t.name === idlType.vec['defined'])[0];
+        }
+        if (typeDetails) {
+            if (typeDetails.type.kind === 'struct') {
+                const fields = typeDetails.type.fields;
+                const definedTypeFields = fields.filter(
+                    (f) =>
+                        typeof f.type === 'object' &&
+                        (('vec' in f.type && typeof f.type.vec === 'object' && 'defined' in f.type.vec) ||
+                            ('option' in f.type && typeof f.type.option === 'object' && 'defined' in f.type.option) ||
+                            ('coption' in f.type &&
+                                typeof f.type.coption === 'object' &&
+                                'defined' in f.type.coption) ||
+                            ('array' in f.type && typeof f.type.array[0] === 'object' && 'defined' in f.type.array[0])),
+                );
+                objectTypes = objectTypes.concat(definedTypeFields.map((df) => df.type));
+                for (let a of definedTypeFields) {
+                    const nestedObjectTypes = getFilterInputsForObjectType(a.type, idlConfig);
+                    if (nestedObjectTypes.length > 0) {
+                        objectTypes = objectTypes.concat(nestedObjectTypes);
+                    }
+                }
+            }
+        }
     }
     return objectTypes;
 }
@@ -156,28 +185,59 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                             const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
                             fields.push({ [field.name]: scalarGQLType });
                         } else {
-                            //const filterInputsForType = getFilterInputsForObjectType(field.type);
-                            if (Object.keys(field.type)[0] === 'defined') {
-                                const definedTypeDetails = idlConfig.types.filter(
-                                    (t) => t.name === field.type['defined'],
-                                )[0];
-                                if (definedTypeDetails.type.kind !== 'enum') {
-                                    const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
-                                    fields.push({ [field.name]: objectGqlType + '_Filters' });
-                                    if (!nestedInputsToGenerate.includes(field.type)) {
-                                        nestedInputsToGenerate.push(field.type);
+                            if (typeof field.type === 'object') {
+                                if (Object.keys(field.type)[0] === 'defined') {
+                                    const definedTypeDetails = idlConfig.types.filter(
+                                        (t) => t.name === field.type['defined'],
+                                    )[0];
+                                    if (definedTypeDetails.type.kind !== 'enum') {
+                                        const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
+                                        fields.push({ [field.name]: objectGqlType + '_Filters' });
+                                        if (!nestedInputsToGenerate.includes(field.type)) {
+                                            nestedInputsToGenerate.push(field.type);
+                                        }
+                                        const additionalInputsToBeGenerated = getFilterInputsForObjectType(
+                                            field.type,
+                                            idlConfig,
+                                        );
+                                        nestedInputsToGenerate =
+                                            nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
                                     }
-                                    const additionalInputsToBeGenerated = getFilterInputsForObjectType(
-                                        field.type,
-                                        idlConfig,
-                                    );
-                                    nestedInputsToGenerate =
-                                        nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
+                                } else if (
+                                    Object.keys(field.type)[0] === 'array' ||
+                                    Object.keys(field.type)[0] === 'vec'
+                                ) {
+                                    if ('array' in field.type) {
+                                        const arrayDetails = field.type.array;
+                                        if (
+                                            typeof field.type.array[0] === 'object' &&
+                                            'defined' in field.type.array[0]
+                                        ) {
+                                            const definedTypeDetails = idlConfig.types.filter(
+                                                (t) => t.name === field.type['array'][0].defined,
+                                            )[0];
+                                            if (definedTypeDetails.type.kind !== 'enum') {
+                                                const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
+                                                fields.push({ [field.name]: objectGqlType + '_Filters' });
+                                                if (!nestedInputsToGenerate.includes(field.type)) {
+                                                    nestedInputsToGenerate.push(field.type);
+                                                }
+                                                const additionalInputsToBeGenerated = getFilterInputsForObjectType(
+                                                    field.type,
+                                                    idlConfig,
+                                                );
+                                                nestedInputsToGenerate =
+                                                    nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
+                                            }
+                                            const a = '';
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
                 if (fields.length > 0) {
                     fields.push({
                         aggregate: convertPascal(projectName) + '_' + account.name + '_Account_Aggregate_Filters',
@@ -240,6 +300,24 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                 return {
                     [y['name']]: key,
                 };
+            } else if ('array' in y.type) {
+                if (typeof y.type.array[0] !== 'object') {
+                    let key = getKeyOrGQLTypeForIDLType(y.type);
+                    let nestedFilterType = getFilterTypeForField(key, '', '');
+                    let nestedFilterName = convertPascal(projectName) + '_' + nType + '_' + y.name + '_Filters';
+                    filters.push([nestedFilterName, { [y.name]: nestedFilterType }]);
+                    return {
+                        [y['name']]: nestedFilterName,
+                    };
+                } else if ('defined' in y.type.array[0]) {
+                    let key = getKeyOrGQLTypeForIDLType(y.type);
+                    let nestedFilterType = getFilterTypeForField(key, nType, y.name);
+                    let nestedFilterName = convertPascal(projectName) + '_' + nType + '_' + y.name + '_Filters';
+                    filters.push([nestedFilterName, { [y.name]: nestedFilterType }]);
+                    return {
+                        [y['name']]: nestedFilterName,
+                    };
+                }
             }
         });
         if (values.length > 0) {

@@ -213,6 +213,14 @@
             "args": [{ "name": "params", "type": { "defined": "OracleQueueSetRewardsParams" } }]
         },
         {
+            "name": "oracleQueueVrfConfig",
+            "accounts": [
+                { "name": "queue", "isMut": true, "isSigner": false },
+                { "name": "authority", "isMut": false, "isSigner": true }
+            ],
+            "args": [{ "name": "params", "type": { "defined": "OracleQueueSetVrfSettingsParams" } }]
+        },
+        {
             "name": "oracleInit",
             "accounts": [
                 { "name": "oracle", "isMut": true, "isSigner": false },
@@ -339,9 +347,57 @@
             "args": [{ "name": "params", "type": { "defined": "CrankPopParams" } }]
         },
         {
-            "name": "ecvrfVerify",
-            "accounts": [{ "name": "randomnessProducer", "isMut": false, "isSigner": false }],
-            "args": [{ "name": "params", "type": { "defined": "EcvrfVerifyParams" } }]
+            "name": "vrfInit",
+            "accounts": [
+                { "name": "vrf", "isMut": true, "isSigner": false },
+                { "name": "authority", "isMut": false, "isSigner": false },
+                { "name": "oracleQueue", "isMut": false, "isSigner": false },
+                { "name": "escrow", "isMut": true, "isSigner": false },
+                { "name": "programState", "isMut": false, "isSigner": false },
+                { "name": "tokenProgram", "isMut": false, "isSigner": false }
+            ],
+            "args": [{ "name": "params", "type": { "defined": "VrfInitParams" } }]
+        },
+        {
+            "name": "vrfRequestRandomness",
+            "accounts": [
+                { "name": "authority", "isMut": false, "isSigner": true },
+                { "name": "vrf", "isMut": true, "isSigner": false },
+                { "name": "oracleQueue", "isMut": true, "isSigner": false },
+                { "name": "queueAuthority", "isMut": false, "isSigner": false },
+                { "name": "dataBuffer", "isMut": false, "isSigner": false },
+                { "name": "permission", "isMut": true, "isSigner": false },
+                { "name": "escrow", "isMut": true, "isSigner": false },
+                { "name": "payerWallet", "isMut": true, "isSigner": false },
+                { "name": "payerAuthority", "isMut": false, "isSigner": true },
+                { "name": "recentBlockhashes", "isMut": false, "isSigner": false },
+                { "name": "programState", "isMut": false, "isSigner": false },
+                { "name": "tokenProgram", "isMut": false, "isSigner": false }
+            ],
+            "args": [{ "name": "params", "type": { "defined": "VrfRequestRandomnessParams" } }]
+        },
+        {
+            "name": "vrfProve",
+            "accounts": [
+                { "name": "vrf", "isMut": true, "isSigner": false },
+                { "name": "oracle", "isMut": false, "isSigner": false },
+                { "name": "randomnessProducer", "isMut": false, "isSigner": true }
+            ],
+            "args": [{ "name": "params", "type": { "defined": "VrfProveParams" } }]
+        },
+        {
+            "name": "vrfVerify",
+            "accounts": [
+                { "name": "vrf", "isMut": true, "isSigner": false },
+                { "name": "callbackPid", "isMut": false, "isSigner": false },
+                { "name": "tokenProgram", "isMut": false, "isSigner": false },
+                { "name": "escrow", "isMut": true, "isSigner": false },
+                { "name": "programState", "isMut": false, "isSigner": false },
+                { "name": "oracle", "isMut": false, "isSigner": false },
+                { "name": "oracleAuthority", "isMut": false, "isSigner": false },
+                { "name": "oracleWallet", "isMut": true, "isSigner": false }
+            ],
+            "args": [{ "name": "params", "type": { "defined": "VrfVerifyParams" } }]
         }
     ],
     "accounts": [
@@ -442,7 +498,8 @@
                     { "name": "consecutiveFeedFailureLimit", "type": "u64" },
                     { "name": "consecutiveOracleFailureLimit", "type": "u64" },
                     { "name": "unpermissionedFeedsEnabled", "type": "bool" },
-                    { "name": "ebuf", "type": { "array": ["u8", 1023] } },
+                    { "name": "unpermissionedVrfEnabled", "type": "bool" },
+                    { "name": "ebuf", "type": { "array": ["u8", 1022] } },
                     { "name": "maxSize", "type": "u32" },
                     { "name": "dataBuffer", "type": "publicKey" }
                 ]
@@ -461,18 +518,6 @@
                     { "name": "jitterModifier", "type": "u8" },
                     { "name": "ebuf", "type": { "array": ["u8", 255] } },
                     { "name": "dataBuffer", "type": "publicKey" }
-                ]
-            }
-        },
-        {
-            "name": "VrfAccountData",
-            "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "counter", "type": "u128" },
-                    { "name": "latestFinalizedRound", "type": { "defined": "VrfRound" } },
-                    { "name": "currentRound", "type": { "defined": "VrfRound" } },
-                    { "name": "ebuf", "type": { "array": ["u8", 255] } }
                 ]
             }
         },
@@ -505,6 +550,26 @@
                     { "name": "hash", "type": { "array": ["u8", 32] } },
                     { "name": "data", "type": "bytes" },
                     { "name": "referenceCount", "type": "u32" }
+                ]
+            }
+        },
+        {
+            "name": "VrfAccountData",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "status", "type": { "defined": "VrfStatus" } },
+                    { "name": "counter", "type": "u128" },
+                    { "name": "authority", "type": "publicKey" },
+                    { "name": "oracleQueue", "type": "publicKey" },
+                    { "name": "escrow", "type": "publicKey" },
+                    { "name": "callback", "type": { "defined": "CallbackZC" } },
+                    { "name": "batchSize", "type": "u32" },
+                    { "name": "builders", "type": { "array": [{ "defined": "VrfBuilder" }, 8] } },
+                    { "name": "buildersLen", "type": "u32" },
+                    { "name": "testMode", "type": "bool" },
+                    { "name": "currentRound", "type": { "defined": "VrfRound" } },
+                    { "name": "ebuf", "type": { "array": ["u8", 1024] } }
                 ]
             }
         }
@@ -622,16 +687,6 @@
             }
         },
         {
-            "name": "EcvrfVerifyParams",
-            "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "proof", "type": "bytes" },
-                    { "name": "alpha", "type": "bytes" }
-                ]
-            }
-        },
-        {
             "name": "JobInitParams",
             "type": {
                 "kind": "struct",
@@ -709,13 +764,18 @@
                     { "name": "consecutiveFeedFailureLimit", "type": "u64" },
                     { "name": "consecutiveOracleFailureLimit", "type": "u64" },
                     { "name": "queueSize", "type": "u32" },
-                    { "name": "unpermissionedFeeds", "type": "bool" }
+                    { "name": "unpermissionedFeeds", "type": "bool" },
+                    { "name": "unpermissionedVrf", "type": "bool" }
                 ]
             }
         },
         {
             "name": "OracleQueueSetRewardsParams",
             "type": { "kind": "struct", "fields": [{ "name": "rewards", "type": "u64" }] }
+        },
+        {
+            "name": "OracleQueueSetVrfSettingsParams",
+            "type": { "kind": "struct", "fields": [{ "name": "unpermissionedVrfEnabled", "type": "bool" }] }
         },
         {
             "name": "OracleWithdrawParams",
@@ -803,21 +863,6 @@
             }
         },
         {
-            "name": "VrfRound",
-            "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "vrfProducer", "type": "publicKey" },
-                    { "name": "reprProof", "type": { "array": ["u8", 224] } },
-                    { "name": "proof", "type": { "array": ["u8", 80] } },
-                    { "name": "alpha", "type": { "array": ["u8", 64] } },
-                    { "name": "alphaLen", "type": "u32" },
-                    { "name": "stage", "type": "u32" },
-                    { "name": "ebuf", "type": { "array": ["u8", 255] } }
-                ]
-            }
-        },
-        {
             "name": "CrankRow",
             "type": {
                 "kind": "struct",
@@ -855,6 +900,180 @@
             }
         },
         {
+            "name": "EcvrfProofZC",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "gamma", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "c", "type": { "defined": "Scalar" } },
+                    { "name": "s", "type": { "defined": "Scalar" } }
+                ]
+            }
+        },
+        {
+            "name": "Scalar",
+            "type": { "kind": "struct", "fields": [{ "name": "bytes", "type": { "array": ["u8", 32] } }] }
+        },
+        {
+            "name": "FieldElementZC",
+            "type": { "kind": "struct", "fields": [{ "name": "bytes", "type": { "array": ["u64", 5] } }] }
+        },
+        {
+            "name": "CompletedPointZC",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "x", "type": { "defined": "FieldElementZC" } },
+                    { "name": "y", "type": { "defined": "FieldElementZC" } },
+                    { "name": "z", "type": { "defined": "FieldElementZC" } },
+                    { "name": "t", "type": { "defined": "FieldElementZC" } }
+                ]
+            }
+        },
+        {
+            "name": "EdwardsPointZC",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "x", "type": { "defined": "FieldElementZC" } },
+                    { "name": "y", "type": { "defined": "FieldElementZC" } },
+                    { "name": "z", "type": { "defined": "FieldElementZC" } },
+                    { "name": "t", "type": { "defined": "FieldElementZC" } }
+                ]
+            }
+        },
+        {
+            "name": "ProjectivePointZC",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "x", "type": { "defined": "FieldElementZC" } },
+                    { "name": "y", "type": { "defined": "FieldElementZC" } },
+                    { "name": "z", "type": { "defined": "FieldElementZC" } }
+                ]
+            }
+        },
+        {
+            "name": "EcvrfIntermediate",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "r", "type": { "defined": "FieldElementZC" } },
+                    { "name": "nS", "type": { "defined": "FieldElementZC" } },
+                    { "name": "d", "type": { "defined": "FieldElementZC" } },
+                    { "name": "t13", "type": { "defined": "FieldElementZC" } },
+                    { "name": "t15", "type": { "defined": "FieldElementZC" } }
+                ]
+            }
+        },
+        {
+            "name": "VrfBuilder",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "producer", "type": "publicKey" },
+                    { "name": "status", "type": { "defined": "VrfStatus" } },
+                    { "name": "reprProof", "type": { "array": ["u8", 80] } },
+                    { "name": "proof", "type": { "defined": "EcvrfProofZC" } },
+                    { "name": "yPoint", "type": "publicKey" },
+                    { "name": "stage", "type": "u32" },
+                    { "name": "stage1Out", "type": { "defined": "EcvrfIntermediate" } },
+                    { "name": "r1", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "r2", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "stage3Out", "type": { "defined": "EcvrfIntermediate" } },
+                    { "name": "hPoint", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "sReduced", "type": { "defined": "Scalar" } },
+                    { "name": "yPointBuilder", "type": { "array": [{ "defined": "FieldElementZC" }, 3] } },
+                    { "name": "yRistrettoPoint", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "mulRound", "type": "u8" },
+                    { "name": "hashPointsRound", "type": "u8" },
+                    { "name": "mulTmp1", "type": { "defined": "CompletedPointZC" } },
+                    { "name": "uPoint1", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "uPoint2", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "vPoint1", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "vPoint2", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "uPoint", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "vPoint", "type": { "defined": "EdwardsPointZC" } },
+                    { "name": "u1", "type": { "defined": "FieldElementZC" } },
+                    { "name": "u2", "type": { "defined": "FieldElementZC" } },
+                    { "name": "invertee", "type": { "defined": "FieldElementZC" } },
+                    { "name": "y", "type": { "defined": "FieldElementZC" } },
+                    { "name": "z", "type": { "defined": "FieldElementZC" } },
+                    { "name": "p1Bytes", "type": { "array": ["u8", 32] } },
+                    { "name": "p2Bytes", "type": { "array": ["u8", 32] } },
+                    { "name": "p3Bytes", "type": { "array": ["u8", 32] } },
+                    { "name": "p4Bytes", "type": { "array": ["u8", 32] } },
+                    { "name": "cPrimeHashbuf", "type": { "array": ["u8", 16] } },
+                    { "name": "m1", "type": { "defined": "FieldElementZC" } },
+                    { "name": "m2", "type": { "defined": "FieldElementZC" } },
+                    { "name": "txRemaining", "type": "u32" },
+                    { "name": "verified", "type": "bool" },
+                    { "name": "result", "type": { "array": ["u8", 32] } }
+                ]
+            }
+        },
+        {
+            "name": "AccountMetaZC",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "pubkey", "type": "publicKey" },
+                    { "name": "isSigner", "type": "bool" },
+                    { "name": "isWritable", "type": "bool" }
+                ]
+            }
+        },
+        {
+            "name": "AccountMetaBorsh",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "pubkey", "type": "publicKey" },
+                    { "name": "isSigner", "type": "bool" },
+                    { "name": "isWritable", "type": "bool" }
+                ]
+            }
+        },
+        {
+            "name": "CallbackZC",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "programId", "type": "publicKey" },
+                    { "name": "accounts", "type": { "array": [{ "defined": "AccountMetaZC" }, 32] } },
+                    { "name": "accountsLen", "type": "u32" },
+                    { "name": "ixData", "type": { "array": ["u8", 1024] } },
+                    { "name": "ixDataLen", "type": "u32" }
+                ]
+            }
+        },
+        {
+            "name": "Callback",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "programId", "type": "publicKey" },
+                    { "name": "accounts", "type": { "vec": { "defined": "AccountMetaBorsh" } } },
+                    { "name": "ixData", "type": "bytes" }
+                ]
+            }
+        },
+        {
+            "name": "VrfRound",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "alpha", "type": { "array": ["u8", 256] } },
+                    { "name": "alphaLen", "type": "u32" },
+                    { "name": "requestSlot", "type": "u64" },
+                    { "name": "requestTimestamp", "type": "i64" },
+                    { "name": "result", "type": { "array": ["u8", 32] } },
+                    { "name": "numVerified", "type": "u32" },
+                    { "name": "ebuf", "type": { "array": ["u8", 256] } }
+                ]
+            }
+        },
+        {
             "name": "VaultTransferParams",
             "type": {
                 "kind": "struct",
@@ -865,10 +1084,55 @@
             }
         },
         {
+            "name": "VrfInitParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "callback", "type": { "defined": "Callback" } },
+                    { "name": "stateBump", "type": "u8" }
+                ]
+            }
+        },
+        {
+            "name": "VrfProveParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "proof", "type": "bytes" },
+                    { "name": "idx", "type": "u32" }
+                ]
+            }
+        },
+        {
+            "name": "VrfRequestRandomnessParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "permissionBump", "type": "u8" },
+                    { "name": "stateBump", "type": "u8" }
+                ]
+            }
+        },
+        {
+            "name": "VrfVerifyParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "nonce", "type": { "option": "u32" } },
+                    { "name": "stateBump", "type": "u8" },
+                    { "name": "idx", "type": "u32" }
+                ]
+            }
+        },
+        {
             "name": "SwitchboardPermission",
             "type": {
                 "kind": "enum",
-                "variants": [{ "name": "PermitOracleHeartbeat" }, { "name": "PermitOracleQueueUsage" }]
+                "variants": [
+                    { "name": "PermitOracleHeartbeat" },
+                    { "name": "PermitOracleQueueUsage" },
+                    { "name": "PermitVrfRequests" }
+                ]
             }
         },
         {
@@ -880,6 +1144,20 @@
                     { "name": "TypeError" },
                     { "name": "TypeDisagreement" },
                     { "name": "TypeNoResponse" }
+                ]
+            }
+        },
+        {
+            "name": "VrfStatus",
+            "type": {
+                "kind": "enum",
+                "variants": [
+                    { "name": "StatusNone" },
+                    { "name": "StatusRequesting" },
+                    { "name": "StatusVerifying" },
+                    { "name": "StatusVerified" },
+                    { "name": "StatusCallbackSuccess" },
+                    { "name": "StatusVerifyFailure" }
                 ]
             }
         },
@@ -898,6 +1176,47 @@
     ],
     "events": [
         { "name": "AggregatorInitEvent", "fields": [{ "name": "feedPubkey", "type": "publicKey", "index": false }] },
+        {
+            "name": "VrfRequestRandomnessEvent",
+            "fields": [
+                { "name": "vrfPubkey", "type": "publicKey", "index": true },
+                { "name": "oraclePubkeys", "type": { "vec": "publicKey" }, "index": false },
+                { "name": "loadAmount", "type": "u64", "index": false },
+                { "name": "existingAmount", "type": "u64", "index": false }
+            ]
+        },
+        {
+            "name": "VrfRequestEvent",
+            "fields": [
+                { "name": "vrfPubkey", "type": "publicKey", "index": true },
+                { "name": "oraclePubkeys", "type": { "vec": "publicKey" }, "index": false }
+            ]
+        },
+        {
+            "name": "VrfProveEvent",
+            "fields": [
+                { "name": "vrfPubkey", "type": "publicKey", "index": true },
+                { "name": "oraclePubkey", "type": "publicKey", "index": true },
+                { "name": "authorityPubkey", "type": "publicKey", "index": false }
+            ]
+        },
+        {
+            "name": "VrfVerifyEvent",
+            "fields": [
+                { "name": "vrfPubkey", "type": "publicKey", "index": true },
+                { "name": "oraclePubkey", "type": "publicKey", "index": true },
+                { "name": "authorityPubkey", "type": "publicKey", "index": false },
+                { "name": "amount", "type": "u64", "index": false }
+            ]
+        },
+        {
+            "name": "VrfCallbackPerformedEvent",
+            "fields": [
+                { "name": "vrfPubkey", "type": "publicKey", "index": true },
+                { "name": "oraclePubkey", "type": "publicKey", "index": true },
+                { "name": "amount", "type": "u64", "index": false }
+            ]
+        },
         {
             "name": "AggregatorOpenRoundEvent",
             "fields": [
@@ -1058,7 +1377,7 @@
         { "code": 6012, "name": "PubkeyNotFoundError", "msg": "The queried public key was not found." },
         { "code": 6013, "name": "AggregatorIllegalRoundOpenCall", "msg": "Aggregator round open called too early." },
         { "code": 6014, "name": "AggregatorIllegalRoundCloseCall", "msg": "Aggregator round close called too early." },
-        { "code": 6015, "name": "AggregatorClosedError", "msg": "Aggregator is closed. Illegal aciton." },
+        { "code": 6015, "name": "AggregatorClosedError", "msg": "Aggregator is closed. Illegal action." },
         { "code": 6016, "name": "IllegalOracleIdxError", "msg": "Illegal oracle index." },
         {
             "code": 6017,
@@ -1069,7 +1388,7 @@
         {
             "code": 6019,
             "name": "UnauthorizedStateUpdateError",
-            "msg": "Unathorized program state modification attempted."
+            "msg": "Unauthorized program state modification attempted."
         },
         {
             "code": 6020,
@@ -1090,7 +1409,7 @@
         {
             "code": 6024,
             "name": "IncorrectTokenAccountMint",
-            "msg": "The provided token account does not point to the Switchbaord token mint."
+            "msg": "The provided token account does not point to the Switchboard token mint."
         },
         { "code": 6025, "name": "InvalidEscrowAccount", "msg": "An invalid escrow account was provided." },
         { "code": 6026, "name": "CrankEmptyError", "msg": "Crank empty. Pop failed." },
@@ -1129,10 +1448,10 @@
             "msg": "Oracle provided an incorrect aggregator job checksum."
         },
         { "code": 6041, "name": "IntegerOverflowError", "msg": "An integer overflow occurred." },
-        { "code": 6042, "name": "InvalidUpdatePeriodError", "msg": "Mimimum update period is 5 seconds." },
+        { "code": 6042, "name": "InvalidUpdatePeriodError", "msg": "Minimum update period is 5 seconds." },
         { "code": 6043, "name": "NoResultsError", "msg": "Aggregator round evaluation attempted with no results." },
         { "code": 6044, "name": "InvalidExpirationError", "msg": "An expiration constraint was broken." },
-        { "code": 6045, "name": "InsufficientStakeError", "msg": "An account provided insufficient stake for aciton." },
+        { "code": 6045, "name": "InsufficientStakeError", "msg": "An account provided insufficient stake for action." },
         { "code": 6046, "name": "LeaseInactiveError", "msg": "The provided lease account is not active." },
         { "code": 6047, "name": "NoAggregatorJobsFound", "msg": "No jobs are currently included in the aggregator." },
         { "code": 6048, "name": "IntegerUnderflowError", "msg": "An integer underflow occurred." },
@@ -1159,6 +1478,25 @@
         { "code": 6057, "name": "InvalidLeaseAccountEscrowError", "msg": "Invalid lease account escrow." },
         { "code": 6058, "name": "InvalidCrankAccountError", "msg": "Invalid crank provided." },
         { "code": 6059, "name": "CrankNoElementsReadyError", "msg": "No elements ready to be popped." },
-        { "code": 6060, "name": "VrfVerifyError", "msg": "Error in verifying vrf proof." }
+        { "code": 6060, "name": "IndexOutOfBoundsError", "msg": "Index out of bounds" },
+        { "code": 6061, "name": "VrfInvalidRequestError", "msg": "Invalid vrf request params" },
+        { "code": 6062, "name": "VrfInvalidProofSubmissionError", "msg": "Vrf proof failed to verify" },
+        { "code": 6063, "name": "VrfVerifyError", "msg": "Error in verifying vrf proof." },
+        { "code": 6064, "name": "VrfCallbackError", "msg": "Vrf callback function failed." },
+        { "code": 6065, "name": "VrfCallbackParamsError", "msg": "Invalid vrf callback params provided." },
+        { "code": 6066, "name": "VrfCallbackAlreadyCalledError", "msg": "Vrf callback has already been triggered." },
+        {
+            "code": 6067,
+            "name": "VrfInvalidPubkeyError",
+            "msg": "The provided pubkey is invalid to use in ecvrf proofs"
+        },
+        { "code": 6068, "name": "VrfTooManyVerifyCallsError", "msg": "Number of required verify calls exceeded" },
+        { "code": 6069, "name": "VrfRequestAlreadyLaunchedError", "msg": "Vrf request is already pending" },
+        {
+            "code": 6070,
+            "name": "VrfInsufficientVerificationError",
+            "msg": "Insufficient amount of proofs collected for VRF callback"
+        },
+        { "code": 6071, "name": "InvalidVrfProducerError", "msg": "An incorrect oracle attempted to submit a proof" }
     ]
 }
