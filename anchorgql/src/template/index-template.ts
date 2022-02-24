@@ -135,8 +135,10 @@ function getDistinctFilterPaths(whereFilter: any): string[] {
             const pendingFilters = [];
             let propertyFilters = fieldFilters[1];
             for (let [property, propertyFilter] of propertyFilters) {
-                if (isFilter(propertyFilter) && 'distinct' in propertyFilter && propertyFilter['distinct'] === true) {
-                    distinctFilters.push((fieldFilters[0] + '.' + property).replace('ROOT.', ''));
+                if (isFilter(propertyFilter)) {
+                    if ('distinct' in propertyFilter && propertyFilter['distinct'] === true) {
+                        distinctFilters.push((fieldFilters[0] + '.' + property).replace('ROOT.', ''));
+                    }
                 } else {
                     pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
                 }
