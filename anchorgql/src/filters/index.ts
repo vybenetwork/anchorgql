@@ -203,36 +203,44 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                                         nestedInputsToGenerate =
                                             nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
                                     }
-                                } else if (
-                                    Object.keys(field.type)[0] === 'array' ||
-                                    Object.keys(field.type)[0] === 'vec'
-                                ) {
-                                    if ('array' in field.type) {
-                                        const arrayDetails = field.type.array;
-                                        if (
-                                            typeof field.type.array[0] === 'object' &&
-                                            'defined' in field.type.array[0]
-                                        ) {
-                                            const definedTypeDetails = idlConfig.types.filter(
-                                                (t) => t.name === field.type['array'][0].defined,
-                                            )[0];
-                                            if (definedTypeDetails.type.kind !== 'enum') {
-                                                const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
-                                                fields.push({ [field.name]: objectGqlType + '_Filters' });
-                                                if (!nestedInputsToGenerate.includes(field.type)) {
-                                                    nestedInputsToGenerate.push(field.type);
-                                                }
-                                                const additionalInputsToBeGenerated = getFilterInputsForObjectType(
-                                                    field.type,
-                                                    idlConfig,
-                                                );
-                                                nestedInputsToGenerate =
-                                                    nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
-                                            }
-                                            const a = '';
-                                        }
-                                    }
-                                }
+                                } //else if (
+                                //     Object.keys(field.type)[0] === 'array' ||
+                                //     Object.keys(field.type)[0] === 'vec'
+                                // ) {
+                                //     if ('array' in field.type) {
+                                //         const arrayDetails = field.type.array;
+                                //         if (
+                                //             typeof field.type.array[0] === 'object' &&
+                                //             'defined' in field.type.array[0]
+                                //         ) {
+                                //             const definedTypeDetails = idlConfig.types.filter(
+                                //                 (t) => t.name === field.type['array'][0].defined,
+                                //             )[0];
+                                //             if (definedTypeDetails.type.kind !== 'enum') {
+                                //                 const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
+                                //                 fields.push({
+                                //                     [field.name]:
+                                //                         convertPascal(projectName) +
+                                //                         '_' +
+                                //                         account.name +
+                                //                         '_' +
+                                //                         field.name +
+                                //                         '_Filters',
+                                //                 });
+                                //                 if (!nestedInputsToGenerate.includes(field.type)) {
+                                //                     nestedInputsToGenerate.push(field.type);
+                                //                 }
+                                //                 // const additionalInputsToBeGenerated = getFilterInputsForObjectType(
+                                //                 //     field.type,
+                                //                 //     idlConfig,
+                                //                 // );
+                                //                 // nestedInputsToGenerate =
+                                //                 //     nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
+                                //             }
+                                //             const a = '';
+                                //         }
+                                //     }
+                                // }
                             }
                         }
                     }
@@ -300,24 +308,6 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                 return {
                     [y['name']]: key,
                 };
-            } else if ('array' in y.type) {
-                if (typeof y.type.array[0] !== 'object') {
-                    let key = getKeyOrGQLTypeForIDLType(y.type);
-                    let nestedFilterType = getFilterTypeForField(key, '', '');
-                    let nestedFilterName = convertPascal(projectName) + '_' + nType + '_' + y.name + '_Filters';
-                    filters.push([nestedFilterName, { [y.name]: nestedFilterType }]);
-                    return {
-                        [y['name']]: nestedFilterName,
-                    };
-                } else if ('defined' in y.type.array[0]) {
-                    let key = getKeyOrGQLTypeForIDLType(y.type);
-                    let nestedFilterType = getFilterTypeForField(key, nType, y.name);
-                    let nestedFilterName = convertPascal(projectName) + '_' + nType + '_' + y.name + '_Filters';
-                    filters.push([nestedFilterName, { [y.name]: nestedFilterType }]);
-                    return {
-                        [y['name']]: nestedFilterName,
-                    };
-                }
             }
         });
         if (values.length > 0) {
@@ -517,6 +507,39 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                 if (definedTypeDetails.type.kind !== 'enum') {
                                                     const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
                                                     values.push({ [field.name]: objectGqlType + '_Filters' });
+                                                }
+                                            } else if (typeof field.type === 'object' && 'array' in field.type) {
+                                                if (
+                                                    typeof field.type.array[0] === 'object' &&
+                                                    'defined' in field.type.array[0]
+                                                ) {
+                                                    const definedTypeName = field.type.array[0].defined;
+                                                    const definedTypeDetails = idlConfig.types.filter(
+                                                        (t) => t.name === definedTypeName,
+                                                    )[0];
+                                                    if (definedTypeDetails.type.kind !== 'enum') {
+                                                        const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
+                                                        values.push({ [field.name]: objectGqlType + '_Filters' });
+                                                    }
+                                                } else {
+                                                    const scalarGQLType = getGqlTypeForIdlScalarType(
+                                                        field.type.array[0],
+                                                    );
+                                                    values.push({ [field.name]: scalarGQLType });
+                                                }
+                                            } else if (
+                                                typeof field.type === 'object' &&
+                                                'vec' in field.type &&
+                                                typeof field.type.vec === 'object' &&
+                                                'defined' in field.type.vec
+                                            ) {
+                                                const definedTypeName = field.type.vec.defined;
+                                                const definedTypeDetails = idlConfig.types.filter(
+                                                    (t) => t.name === definedTypeName,
+                                                )[0];
+                                                if (definedTypeDetails.type.kind !== 'enum') {
+                                                    const scalarGQLType = getGqlTypeForIdlScalarType(field.type.vec);
+                                                    values.push({ [field.name]: scalarGQLType });
                                                 }
                                             }
                                         }
