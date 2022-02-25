@@ -79,8 +79,8 @@ export async function getAccountRootTypes(idlConfig: Idl): Promise<Operation[]> 
  */
 export async function getQueryType(): Promise<Operation[]> {
     const projectName = config.projectName;
-    let accountsSubGraph = 'program_' + projectName + '_Accounts';
-    let accountAggregatesSubGraph = 'program_' + projectName + '_Account_Aggregates';
+    let accountsSubGraph = 'program_' + projectName;
+    let accountAggregatesSubGraph = 'program_' + projectName + '_aggregate';
     return [
         [
             'Query',

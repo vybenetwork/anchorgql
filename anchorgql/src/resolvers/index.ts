@@ -40,8 +40,8 @@ export async function buildResolvers(
     let split = data.split('///----------ACCOUNT_RESOLVERS----------///');
     let codeString = split[0]
         .replace(/__URL__/g, url)
-        .replace(/__ACCOUNTS_ROOT_QUERY__/g, 'program_' + projectName + '_Accounts')
-        .replace(/__ACCOUNT_AGGREGATES_ROOT_QUERY__/g, 'program_' + projectName + '_Account_Aggregates')
+        .replace(/__ACCOUNTS_ROOT_QUERY__/g, 'program_' + projectName)
+        .replace(/__ACCOUNT_AGGREGATES_ROOT_QUERY__/g, 'program_' + projectName + '_aggregate')
         .replace(/__ROOTNAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Accounts')
         .replace(/__UTILITIES_TYPE_NAME__/g, projectName.charAt(0).toUpperCase() + projectName.slice(1) + '_Utils');
     if ('accounts' in idlConfig) {
