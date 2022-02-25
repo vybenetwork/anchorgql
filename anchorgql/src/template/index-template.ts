@@ -204,7 +204,7 @@ const resolvers = {
                         const pendingFilters = [];
                         let propertyFilters = fieldFilters[1];
                         for (let [property, propertyFilter] of propertyFilters) {
-                            if (isFilter(propertyFilter)) {
+                            if (isFilter(propertyFilter) && !('distinct' in propertyFilter)) {
                                 data = applyFilter(
                                     data,
                                     (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
