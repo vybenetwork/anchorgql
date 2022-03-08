@@ -55,6 +55,27 @@ async function getAccountData(account: string, id = null) {
  */
 import { typeDefs } from './root';
 
+function applyFilterOnValue(value, filterValueToCompare, filter) {
+    // not putting tripple eq and neq for BigInt and Int.
+    if (filter === 'eq') {
+        return value == filterValueToCompare;
+    } else if (filter === 'neq') {
+        return value != filterValueToCompare;
+    } else if (filter === 'gt') {
+        return value > filterValueToCompare;
+    } else if (filter === 'lt') {
+        return value < filterValueToCompare;
+    } else if (filter === 'contains') {
+        return value.toString().includes(filterValueToCompare);
+    } else if (filter === 'doesNotContain') {
+        return !value.toString().includes(filterValueToCompare);
+    } else if (filter === 'startsWith') {
+        return value.toString().startsWith(filterValueToCompare);
+    } else if (filter === 'endsWith') {
+        return value.toString().endsWith(filterValueToCompare);
+    }
+}
+
 function applyFilter(data, property, propertyFilters) {
     const filteredData = data.filter((d) => {
         let propValue = '';
@@ -64,27 +85,10 @@ function applyFilter(data, property, propertyFilters) {
             propValue = get(d, property);
         }
         const filtersForField = Object.keys(propertyFilters);
-        for (let filter of filtersForField) {
-            const filterValueToCompare = propertyFilters[filter];
-            // not putting tripple eq and neq for BigInt and Int.
-            if (filter === 'eq') {
-                return propValue == filterValueToCompare;
-            } else if (filter === 'neq') {
-                return propValue != filterValueToCompare;
-            } else if (filter === 'gt') {
-                return propValue > filterValueToCompare;
-            } else if (filter === 'lt') {
-                return propValue < filterValueToCompare;
-            } else if (filter === 'contains') {
-                return propValue.toString().includes(filterValueToCompare);
-            } else if (filter === 'doesNotContain') {
-                return !propValue.toString().includes(filterValueToCompare);
-            } else if (filter === 'startsWith') {
-                return propValue.toString().startsWith(filterValueToCompare);
-            } else if (filter === 'endsWith') {
-                return propValue.toString().endsWith(filterValueToCompare);
-            }
-        }
+        return filtersForField.reduce(
+            (prev, current) => prev && applyFilterOnValue(propValue, propertyFilters[current], current),
+            true,
+        );
     });
     return filteredData;
 }
@@ -94,14 +98,15 @@ function applyOrderBy(data, property, propertyOrderBys) {
         const propValue1 = get(a, property);
         const propValue2 = get(b, property);
         const orderBysForField = Object.keys(propertyOrderBys);
-        for (let orderBy of orderBysForField) {
-            const filterValueToCompare = propertyOrderBys[orderBy];
-            if (filterValueToCompare === 'ASC') {
-                return propValue1 > propValue2 ? 1 : propValue2 > propValue1 ? -1 : 0;
+
+        return orderBysForField.reduce((prev, current) => {
+            const orderByType = propertyOrderBys[current];
+            if (orderByType === 'ASC') {
+                return (propValue1 > propValue2 ? 1 : propValue2 > propValue1 ? -1 : 0) && prev;
             } else {
-                return propValue1 > propValue2 ? -1 : propValue2 > propValue1 ? 1 : 0;
+                return propValue1 > propValue2 ? -1 : propValue2 > propValue1 ? 1 : 0 && prev;
             }
-        }
+        }, true);
     });
     return orderedData;
 }
