@@ -209,11 +209,12 @@ const resolvers = {
                         const pendingFilters = [];
                         let propertyFilters = fieldFilters[1];
                         for (let [property, propertyFilter] of propertyFilters) {
-                            if (isFilter(propertyFilter) && !('distinct' in propertyFilter)) {
+                            if (isFilter(propertyFilter)) {
+                                const { distinct, ...nonDistinctFilters } = propertyFilter;
                                 data = applyFilter(
                                     data,
                                     (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
-                                    propertyFilter,
+                                    nonDistinctFilters,
                                 );
                             } else {
                                 pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
@@ -291,11 +292,12 @@ const resolvers = {
                         const pendingFilters = [];
                         let propertyFilters = fieldFilters[1];
                         for (let [property, propertyFilter] of propertyFilters) {
-                            if (isFilter(propertyFilter) && !('distinct' in propertyFilter)) {
+                            if (isFilter(propertyFilter)) {
+                                const { distinct, ...nonDistinctFilters } = propertyFilter;
                                 data = applyFilter(
                                     data,
                                     'account.' + (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
-                                    propertyFilter,
+                                    nonDistinctFilters,
                                 );
                             } else {
                                 pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
