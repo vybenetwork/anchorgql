@@ -20,7 +20,7 @@ export function getFilterInputsForBaseTypes(): Operation[] {
         convertPascal(projectName) + '_' + 'String_Filters',
         {
             eq: 'String',
-            neq: 'String',
+            neq: '[String]',
             contains: 'String',
             doesNotContain: 'String',
             startsWith: 'String',
@@ -40,7 +40,7 @@ export function getFilterInputsForBaseTypes(): Operation[] {
         convertPascal(projectName) + '_' + 'Int_Filters',
         {
             eq: 'Int',
-            neq: 'Int',
+            neq: '[Int]',
             gt: 'Int',
             lt: 'Int',
             distinct: 'Boolean',
@@ -58,7 +58,7 @@ export function getFilterInputsForBaseTypes(): Operation[] {
         convertPascal(projectName) + '_' + 'BigInt_Filters',
         {
             eq: 'BigInt',
-            neq: 'BigInt',
+            neq: '[BigInt]',
             gt: 'BigInt',
             lt: 'BigInt',
             distinct: 'Boolean',

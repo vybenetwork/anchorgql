@@ -60,7 +60,7 @@ function applyFilterOnValue(value, filterValueToCompare, filter) {
     if (filter === 'eq') {
         return value == filterValueToCompare;
     } else if (filter === 'neq') {
-        return value != filterValueToCompare;
+        return filterValueToCompare.reduce((prev, current) => prev && current != value, true);
     } else if (filter === 'gt') {
         return value > filterValueToCompare;
     } else if (filter === 'lt') {

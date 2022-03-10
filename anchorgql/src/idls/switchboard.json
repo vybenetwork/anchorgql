@@ -228,7 +228,7 @@
                 { "name": "wallet", "isMut": false, "isSigner": false },
                 { "name": "programState", "isMut": false, "isSigner": false },
                 { "name": "queue", "isMut": false, "isSigner": false },
-                { "name": "payer", "isMut": false, "isSigner": false },
+                { "name": "payer", "isMut": true, "isSigner": false },
                 { "name": "systemProgram", "isMut": false, "isSigner": false }
             ],
             "args": [{ "name": "params", "type": { "defined": "OracleInitParams" } }]
@@ -254,7 +254,7 @@
                 { "name": "tokenAccount", "isMut": true, "isSigner": false },
                 { "name": "withdrawAccount", "isMut": true, "isSigner": false },
                 { "name": "oracleQueue", "isMut": true, "isSigner": false },
-                { "name": "permission", "isMut": true, "isSigner": false },
+                { "name": "permission", "isMut": false, "isSigner": false },
                 { "name": "tokenProgram", "isMut": false, "isSigner": false },
                 { "name": "programState", "isMut": false, "isSigner": false },
                 { "name": "payer", "isMut": true, "isSigner": true },
@@ -386,6 +386,21 @@
             "args": [{ "name": "params", "type": { "defined": "VrfProveParams" } }]
         },
         {
+            "name": "vrfProveAndVerify",
+            "accounts": [
+                { "name": "vrf", "isMut": true, "isSigner": false },
+                { "name": "callbackPid", "isMut": false, "isSigner": false },
+                { "name": "tokenProgram", "isMut": false, "isSigner": false },
+                { "name": "escrow", "isMut": true, "isSigner": false },
+                { "name": "programState", "isMut": false, "isSigner": false },
+                { "name": "oracle", "isMut": false, "isSigner": false },
+                { "name": "oracleAuthority", "isMut": false, "isSigner": true },
+                { "name": "oracleWallet", "isMut": true, "isSigner": false },
+                { "name": "instructionsSysvar", "isMut": false, "isSigner": false }
+            ],
+            "args": [{ "name": "params", "type": { "defined": "VrfProveAndVerifyParams" } }]
+        },
+        {
             "name": "vrfVerify",
             "accounts": [
                 { "name": "vrf", "isMut": true, "isSigner": false },
@@ -395,7 +410,8 @@
                 { "name": "programState", "isMut": false, "isSigner": false },
                 { "name": "oracle", "isMut": false, "isSigner": false },
                 { "name": "oracleAuthority", "isMut": false, "isSigner": false },
-                { "name": "oracleWallet", "isMut": true, "isSigner": false }
+                { "name": "oracleWallet", "isMut": true, "isSigner": false },
+                { "name": "instructionsSysvar", "isMut": false, "isSigner": false }
             ],
             "args": [{ "name": "params", "type": { "defined": "VrfVerifyParams" } }]
         }
@@ -817,6 +833,69 @@
             "type": { "kind": "struct", "fields": [{ "name": "stateBump", "type": "u8" }] }
         },
         {
+            "name": "VaultTransferParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "stateBump", "type": "u8" },
+                    { "name": "amount", "type": "u64" }
+                ]
+            }
+        },
+        {
+            "name": "VrfInitParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "callback", "type": { "defined": "Callback" } },
+                    { "name": "stateBump", "type": "u8" }
+                ]
+            }
+        },
+        {
+            "name": "VrfProveParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "proof", "type": "bytes" },
+                    { "name": "idx", "type": "u32" }
+                ]
+            }
+        },
+        {
+            "name": "VrfProveAndVerifyParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "nonce", "type": { "option": "u32" } },
+                    { "name": "stateBump", "type": "u8" },
+                    { "name": "idx", "type": "u32" },
+                    { "name": "proof", "type": "bytes" }
+                ]
+            }
+        },
+        {
+            "name": "VrfRequestRandomnessParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "permissionBump", "type": "u8" },
+                    { "name": "stateBump", "type": "u8" }
+                ]
+            }
+        },
+        {
+            "name": "VrfVerifyParams",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    { "name": "nonce", "type": { "option": "u32" } },
+                    { "name": "stateBump", "type": "u8" },
+                    { "name": "idx", "type": "u32" }
+                ]
+            }
+        },
+        {
             "name": "Hash",
             "type": { "kind": "struct", "fields": [{ "name": "data", "type": { "array": ["u8", 32] } }] }
         },
@@ -1074,53 +1153,80 @@
             }
         },
         {
-            "name": "VaultTransferParams",
+            "name": "Lanes",
             "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "stateBump", "type": "u8" },
-                    { "name": "amount", "type": "u64" }
+                "kind": "enum",
+                "variants": [
+                    { "name": "C" },
+                    { "name": "D" },
+                    { "name": "AB" },
+                    { "name": "AC" },
+                    { "name": "CD" },
+                    { "name": "AD" },
+                    { "name": "BC" },
+                    { "name": "ABCD" }
                 ]
             }
         },
         {
-            "name": "VrfInitParams",
+            "name": "Shuffle",
             "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "callback", "type": { "defined": "Callback" } },
-                    { "name": "stateBump", "type": "u8" }
+                "kind": "enum",
+                "variants": [
+                    { "name": "AAAA" },
+                    { "name": "BBBB" },
+                    { "name": "CACA" },
+                    { "name": "DBBD" },
+                    { "name": "ADDA" },
+                    { "name": "CBCB" },
+                    { "name": "ABAB" },
+                    { "name": "BADC" },
+                    { "name": "BACD" },
+                    { "name": "ABDC" }
                 ]
             }
         },
         {
-            "name": "VrfProveParams",
+            "name": "Shuffle",
             "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "proof", "type": "bytes" },
-                    { "name": "idx", "type": "u32" }
+                "kind": "enum",
+                "variants": [
+                    { "name": "AAAA" },
+                    { "name": "BBBB" },
+                    { "name": "BADC" },
+                    { "name": "BACD" },
+                    { "name": "ADDA" },
+                    { "name": "CBCB" },
+                    { "name": "ABDC" },
+                    { "name": "ABAB" },
+                    { "name": "DBBD" },
+                    { "name": "CACA" }
                 ]
             }
         },
         {
-            "name": "VrfRequestRandomnessParams",
+            "name": "Lanes",
             "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "permissionBump", "type": "u8" },
-                    { "name": "stateBump", "type": "u8" }
+                "kind": "enum",
+                "variants": [
+                    { "name": "D" },
+                    { "name": "C" },
+                    { "name": "AB" },
+                    { "name": "AC" },
+                    { "name": "AD" },
+                    { "name": "BCD" }
                 ]
             }
         },
         {
-            "name": "VrfVerifyParams",
+            "name": "Error",
             "type": {
-                "kind": "struct",
-                "fields": [
-                    { "name": "nonce", "type": { "option": "u32" } },
-                    { "name": "stateBump", "type": "u8" },
-                    { "name": "idx", "type": "u32" }
+                "kind": "enum",
+                "variants": [
+                    { "name": "InvalidPublicKey" },
+                    { "name": "SerializationError", "fields": [{ "defined": "bincode::Error" }] },
+                    { "name": "DeserializationError", "fields": [{ "defined": "bincode::Error" }] },
+                    { "name": "InvalidDataError" }
                 ]
             }
         },
@@ -1158,18 +1264,6 @@
                     { "name": "StatusVerified" },
                     { "name": "StatusCallbackSuccess" },
                     { "name": "StatusVerifyFailure" }
-                ]
-            }
-        },
-        {
-            "name": "Error",
-            "type": {
-                "kind": "enum",
-                "variants": [
-                    { "name": "InvalidPublicKey" },
-                    { "name": "SerializationError", "fields": [{ "defined": "bincode::Error" }] },
-                    { "name": "DeserializationError", "fields": [{ "defined": "bincode::Error" }] },
-                    { "name": "InvalidDataError" }
                 ]
             }
         }
