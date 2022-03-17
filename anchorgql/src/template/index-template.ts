@@ -157,6 +157,40 @@ function getDistinctFilterPaths(whereFilter: any): string[] {
     return distinctFilters;
 }
 
+function applyAggregateFilters(data, allFilters) {
+    let filters: any[] = [['ROOT', Object.entries(allFilters)]];
+    let filtersAtCurrentLevel = filters;
+    while (filtersAtCurrentLevel.length > 0) {
+        for (let fieldFilters of filtersAtCurrentLevel) {
+            const pendingFilters = [];
+            let propertyFilters = fieldFilters[1];
+            for (let [property, propertyFilter] of propertyFilters) {
+                if (isFilter(propertyFilter)) {
+                    const { distinct, ...nonDistinctFilters } = propertyFilter;
+                    if (fieldFilters[0].split('.').length > 0 && fieldFilters[0].split('.')[1] === 'aggregate')
+                        data = applyFilter(
+                            [data],
+                            (fieldFilters[0] + '.' + property).replace('ROOT.aggregate.', ''),
+                            nonDistinctFilters,
+                        );
+                    if (data.length > 0) {
+                        data = data[0];
+                    } else {
+                        return null;
+                    }
+                } else {
+                    pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
+                }
+            }
+            filtersAtCurrentLevel = pendingFilters;
+            if (filtersAtCurrentLevel.length === 0) {
+                break;
+            }
+        }
+    }
+    return data;
+}
+
 const resolvers = {
     BigInt: BigIntResolver,
     Byte: ByteResolver,
@@ -294,11 +328,17 @@ const resolvers = {
                         for (let [property, propertyFilter] of propertyFilters) {
                             if (isFilter(propertyFilter)) {
                                 const { distinct, ...nonDistinctFilters } = propertyFilter;
-                                data = applyFilter(
-                                    data,
-                                    'account.' + (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
-                                    nonDistinctFilters,
-                                );
+                                // only apply non aggregation filters here
+                                if (
+                                    fieldFilters[0].split('.').length > 0 &&
+                                    fieldFilters[0].split('.')[1] !== 'aggregate'
+                                ) {
+                                    data = applyFilter(
+                                        data,
+                                        'account.' + (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
+                                        nonDistinctFilters,
+                                    );
+                                }
                             } else {
                                 pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
                             }
@@ -345,6 +385,9 @@ const resolvers = {
                         };
                     }
                 });
+                if (args.where) {
+                    aggregateData = applyAggregateFilters(aggregateData, args.where);
+                }
                 return aggregateData;
             }
             return {};
