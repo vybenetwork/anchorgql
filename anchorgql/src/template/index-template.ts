@@ -245,11 +245,17 @@ const resolvers = {
                         for (let [property, propertyFilter] of propertyFilters) {
                             if (isFilter(propertyFilter)) {
                                 const { distinct, ...nonDistinctFilters } = propertyFilter;
-                                data = applyFilter(
-                                    data,
-                                    (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
-                                    nonDistinctFilters,
-                                );
+                                // only apply non aggregation filters here
+                                if (
+                                    fieldFilters[0].split('.').length > 0 &&
+                                    fieldFilters[0].split('.')[2] !== 'aggregate'
+                                ) {
+                                    data = applyFilter(
+                                        data,
+                                        (fieldFilters[0] + '.' + property).replace('ROOT.', ''),
+                                        nonDistinctFilters,
+                                    );
+                                }
                             } else {
                                 pendingFilters.push([fieldFilters[0] + '.' + property, Object.entries(propertyFilter)]);
                             }
@@ -293,6 +299,48 @@ const resolvers = {
 
             if (args?.limit) {
                 data = data.slice(0, args.limit);
+            }
+
+            if (data.length > 0) {
+                let aggregateData = {};
+                Object.entries(data[0].account).map(([k, v]) => {
+                    if (typeof v === 'number' || typeof v === 'bigint') {
+                        aggregateData[k] = {
+                            count: data.length,
+                            min: data.reduce(
+                                (previous, current) => (current.account[k] < previous ? current.account[k] : previous),
+                                0,
+                            ),
+                            max: data.reduce(
+                                (previous, current) => (current.account[k] > previous ? current.account[k] : previous),
+                                0,
+                            ),
+                            average:
+                                data.reduce(
+                                    (previousValue, currentValue) => previousValue + currentValue.account[k],
+                                    0,
+                                ) / data.length,
+                            sum: data.reduce(
+                                (previousValue, currentValue) => previousValue + currentValue.account[k],
+                                0,
+                            ),
+                        };
+                    } else if (typeof v === 'string') {
+                        aggregateData[k] = {
+                            count: data.length,
+                        };
+                    } else if (typeof v === 'boolean') {
+                        aggregateData[k] = {
+                            count: data.length,
+                        };
+                    }
+                });
+                if (args.where) {
+                    aggregateData = applyAggregateFilters(aggregateData, args.where);
+                }
+                if (!aggregateData) {
+                    return null;
+                }
             }
 
             return data;
