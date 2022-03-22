@@ -297,10 +297,6 @@ const resolvers = {
                 }
             }
 
-            if (args?.limit) {
-                data = data.slice(0, args.limit);
-            }
-
             if (data.length > 0) {
                 let aggregateData = {};
                 Object.entries(data[0].account).map(([k, v]) => {
@@ -335,12 +331,16 @@ const resolvers = {
                         };
                     }
                 });
-                if (args.where) {
-                    aggregateData = applyAggregateFilters(aggregateData, args.where);
+                if (args.where && args.where.account && args.where.account.aggregate) {
+                    aggregateData = applyAggregateFilters(aggregateData, { aggregate: args.where.account.aggregate });
                 }
                 if (!aggregateData) {
                     return null;
                 }
+            }
+
+            if (args?.limit) {
+                data = data.slice(0, args.limit);
             }
 
             return data;
@@ -433,8 +433,8 @@ const resolvers = {
                         };
                     }
                 });
-                if (args.where) {
-                    aggregateData = applyAggregateFilters(aggregateData, args.where);
+                if (args.where && args.where.aggregate) {
+                    aggregateData = applyAggregateFilters(aggregateData, { aggregate: args.where.aggregate });
                 }
                 return aggregateData;
             }
