@@ -181,7 +181,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                 if (accountFields) {
                     for (let field of accountFields) {
                         const fieldTypeStringified = field.type as string;
-                        if (typeof fieldTypeStringified !== 'object') {
+                        if (typeof fieldTypeStringified !== 'object' && fieldTypeStringified !== 'bytes') {
                             const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
                             fields.push({ [field.name]: scalarGQLType });
                         } else {
@@ -302,7 +302,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
         values = typeDetails.type.fields.map((y: IdlField) => {
             if (typeof y.type !== 'object' || 'defined' in y.type) {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
-                if (key !== 'String' && key !== 'Int' && key !== 'BigInt' && key !== 'Boolean') {
+                if (key !== 'String' && key !== 'Int' && key !== 'BigInt' && key !== 'Boolean' && key !== 'Byte') {
                     key += '_Filters';
                 }
                 return {
@@ -494,7 +494,10 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                 if (filterFields) {
                                     for (let field of filterFields) {
                                         const fieldTypeStringified = field.type as string;
-                                        if (typeof fieldTypeStringified !== 'object') {
+                                        if (
+                                            typeof fieldTypeStringified !== 'object' &&
+                                            fieldTypeStringified !== 'bytes'
+                                        ) {
                                             const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
                                             values.push({
                                                 [field.name]: scalarGQLType,

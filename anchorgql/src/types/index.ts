@@ -13,7 +13,6 @@ export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
     let typeArr: Operation[] = [];
     if (idlConfig.hasOwnProperty('types')) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
-        let typeUsed = isDefinedTypeUsedInAccounts('AccountMetaZC', idlConfig);
         let idlStructTypes = idlTypes.filter(
             (x) => x.type.kind === 'struct' && isDefinedTypeUsedInAccounts(x.name, idlConfig),
         );
