@@ -4,7 +4,7 @@
     "description": "",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "npm install && ANCHOR_PROVIDER_URL=__YOURANCHORPROVIDERURL__ ANCHOR_WALLET=/etc/.config/solana/id.json node --max-old-space-size=4096 -- node_modules/.bin/ts-node -P tsconfig.json src/index.ts"
+        "start": "npm install && node --max-old-space-size=4096 -- node_modules/.bin/ts-node -P tsconfig.json src/index.ts"
     },
     "repository": {
         "type": "git",
@@ -14,8 +14,12 @@
     "license": "ISC",
     "homepage": "https://bitbucket.org/serumpulse/anchorgqlbuilder#readme",
     "dependencies": {
-        "@project-serum/anchor": "0.20.1",
-        "@solana/web3.js": "^1.30.2",
+        "@project-serum/anchor": "^0.23.0",
+        "@solana/web3.js": "^1.36.0",
+        "@vybe-network/minimal-anchor": "^1.2.1",
+        "@strata-foundation/web3-token-auth": "^3.4.6",
+        "js-base64": "^3.7.2",
+        "axios": "^0.26.0",
         "apollo-server-express": "^2.4.8",
         "bn.js": "^5.2.0",
         "bs58": "^4.0.1",
@@ -30,6 +34,7 @@
     },
     "devDependencies": {
         "@types/bs58": "^4.0.1",
+        "@types/bn.js": "5.1.0",
         "@types/node": "^16.11.7",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4"

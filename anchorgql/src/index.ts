@@ -1,5 +1,5 @@
 import * as config from './config.json';
-import { readFile, writeFile, copyFile, mkdir } from 'fs/promises';
+import { copyFile, mkdir } from 'fs/promises';
 import { buildTypeDef } from './typedef';
 import { buildResolvers } from './resolvers';
 
@@ -21,9 +21,6 @@ async function makeDirs(path: string) {
  */
 async function copyFiles(path: string) {
     await copyFile('./src/template/package-template.json', path + '/package.json');
-    let data = await readFile(path + `/package.json`, 'utf8');
-    let result = data.replace(/__YOURANCHORPROVIDERURL__/g, config.anchorProviderURL);
-    await writeFile(path + `/package.json`, result);
     await copyFile(config.idlPath, path + config.idlPath.substring(1));
     await copyFile('./src/template/tsconfig-template.json', path + '/tsconfig.json');
     await copyFile('./src/config.json', path + '/src/config.json');

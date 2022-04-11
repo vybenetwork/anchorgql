@@ -2,20 +2,48 @@ import { ApolloServer } from 'apollo-server-express';
 import { BigIntResolver, ByteResolver } from 'graphql-scalars';
 import express from 'express';
 import { AddressInfo } from 'net';
-import { Provider, setProvider, web3, Program } from '@project-serum/anchor';
-import { PublicKey } from '@solana/web3.js';
+import { web3 } from '@project-serum/anchor';
+import { Commitment, Connection, FetchMiddleware, PublicKey } from '@solana/web3.js';
+import { getCoder, getProgramAccounts } from '@vybe-network/minimal-anchor';
+import { tokenAuthFetchMiddleware } from '@strata-foundation/web3-token-auth';
 import BN from 'bn.js';
 import { readFileSync } from 'fs';
 import { get } from 'lodash';
 import bs58 from 'bs58';
+import axios from 'axios';
+import { Base64 } from 'js-base64';
 import configVars from './config.json';
 
-const provider = Provider.env();
-setProvider(provider);
+async function getAuthToken() {
+    const token = Base64.encode(`${process.env.RPC_AUTH_CLIENT_ID}:${process.env.RPC_AUTH_CLIENT_SECRET}`);
+    const access_token = await axios.post(process.env.RPC_AUTH_URL, 'grant_type=client_credentials', {
+        headers: {
+            authorization: `Basic ${token}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+    });
+    const returnedAuthData = access_token.data;
+    return returnedAuthData.access_token as string;
+}
+
+const connectionConfig: {
+    commitment: Commitment;
+    fetchMiddleware?: FetchMiddleware;
+} = {
+    commitment: 'confirmed' as Commitment,
+};
+if (process.env.RPC_AUTH_CLIENT_ID && process.env.RPC_AUTH_CLIENT_SECRET && process.env.RPC_AUTH_URL) {
+    connectionConfig.fetchMiddleware = tokenAuthFetchMiddleware({
+        tokenExpiry: 180000,
+        getToken: getAuthToken,
+    });
+}
 
 const idl = JSON.parse(readFileSync(configVars.idlPath, 'utf8'));
 const programId = new web3.PublicKey(configVars.programID);
-const client = new Program(idl, programId);
+const coder = getCoder(idl);
+const connection = new Connection(configVars.anchorProviderURL, connectionConfig);
+const programAccountsClient = getProgramAccounts(idl, coder, programId, connection);
 
 function pubKeyBigNumTransform(o) {
     Object.keys(o).forEach(function (k) {
@@ -34,7 +62,7 @@ function pubKeyBigNumTransform(o) {
 
 async function getAccountData(account: string, id = null) {
     if (id !== null) {
-        let value = await client.account[account].fetch(id);
+        let value = await programAccountsClient[account].fetch(id);
         let transformed = pubKeyBigNumTransform(value);
         return [
             {
@@ -43,7 +71,7 @@ async function getAccountData(account: string, id = null) {
             },
         ];
     } else {
-        let value = await client.account[account].all();
+        let value = await programAccountsClient[account].all();
         let transformed = pubKeyBigNumTransform(value);
         return transformed;
     }
@@ -205,7 +233,7 @@ const resolvers = {
             const base58String = bs58.encode(baseHexBuffer);
             const base58Buffer = bs58.decode(base58String);
             try {
-                const data = client.coder.accounts.decode(args.account, base58Buffer);
+                const data = coder.accounts.decode(args.account, base58Buffer);
                 return data;
             } catch {
                 return {
