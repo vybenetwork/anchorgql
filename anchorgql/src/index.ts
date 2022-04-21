@@ -29,7 +29,6 @@ async function copyFiles(path: string) {
 async function main() {
     //** Edit this to change your server directory */
     const SUB_DIR = './src/server';
-    const currentDir = process.cwd();
     let idlConfig = await import('../' + config.idlPath);
     const indexOutputFile = SUB_DIR + '/src/index.ts';
     const typeDefOutputFile = SUB_DIR + '/src/root.ts';

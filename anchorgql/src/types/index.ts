@@ -11,7 +11,7 @@ import { convertPascal, getFilterTypeForField, getKeyOrGQLTypeForIDLType, isDefi
 export async function getStructTypes(idlConfig: Idl): Promise<Operation[]> {
     let projectName = config.projectName;
     let typeArr: Operation[] = [];
-    if (idlConfig.hasOwnProperty('types')) {
+    if ('types' in idlConfig) {
         let idlTypes: IdlTypeDef[] = idlConfig.types;
         let idlStructTypes = idlTypes.filter(
             (x) => x.type.kind === 'struct' && isDefinedTypeUsedInAccounts(x.name, idlConfig),
