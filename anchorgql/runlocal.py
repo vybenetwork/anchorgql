@@ -1,6 +1,9 @@
 import json
 import subprocess
-import os
+import asyncio
+from solana.rpc.async_api import AsyncClient
+from solana.publickey import PublicKey
+from anchorpy import Program, Provider, Wallet
 
 
 class bcolors:
@@ -41,6 +44,24 @@ def create_project_config(path, content):
     return
 
 
+async def check_and_replace_with_new_idl(program_id, idl_path, anchor_provider_url):
+    client = AsyncClient(anchor_provider_url)
+    provider = Provider(client, Wallet.local())
+    program_id = PublicKey(program_id)
+    try:
+        idl = await Program.fetch_raw_idl(
+            program_id, provider
+        )
+    except:
+        await client.close()
+        return
+    if idl is not None:
+        with open(idl_path, 'w') as file:
+            json.dump(idl, file)
+    await client.close()
+    return
+
+
 def main():
     # On Windows, if an error happens where the channels file isn't found, you probably opened the project
     # from the wrong directory. Either try reopening the project from the correct directory or play with the
@@ -54,6 +75,8 @@ def main():
         program_id = channel['PROGRAM_ID']
         anchor_provider_url = channel['ANCHOR_PROVIDER_URL']
         idl_path = channel['IDL_PATH']
+        asyncio.run(check_and_replace_with_new_idl(
+            program_id, idl_path, anchor_provider_url))
         content = {
             "projectName": project_name,
             "protocol": channel["PROTOCOL"],

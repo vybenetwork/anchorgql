@@ -200,6 +200,14 @@
             "PROGRAM_ID": "Govz1VyoyLD5BL6CSCxUJLVLsQHRwjfFj1prNsdNg5Jw",
             "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
             "IDL_PATH": "./src/idls/govern.json"
+        },
+        {
+            "PROJECT_NAME": "switchboard_switchboard_v2_m",
+            "PROTOCOL": "switchboard",
+            "NETWORK": "mainnet",
+            "PROGRAM_ID": "SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f",
+            "ANCHOR_PROVIDER_URL": "https://api.mainnet-beta.solana.com",
+            "IDL_PATH": "./src/idls/switchboard.json"
         }
     ]
 }
