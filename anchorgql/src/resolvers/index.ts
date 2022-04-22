@@ -78,9 +78,6 @@ export async function buildResolvers(
     } else {
         codeString = codeString.concat(split[2]);
     }
-
-    // replace transaction filter name
-    //codeString = codeString.replace('__TRANSACTION_NAME__', projectName + '_Transactions');
     await writeFile(indexOutputFile, codeString);
     await buildEnumFieldResolvers(indexOutputFile, idlConfig);
     await buildArrayFieldResolvers(indexOutputFile, idlConfig);

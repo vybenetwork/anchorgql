@@ -1,4 +1,4 @@
-import { Idl, IdlField, IdlType, Operation } from '../types';
+import { Idl, Operation } from '../types';
 import * as config from '../config.json';
 import { convertPascal, getGqlTypeForIdlScalarType } from '../utils';
 
@@ -47,6 +47,11 @@ export function getBaseAggregateTypes(): Operation[] {
     return [stringAggregates, intAggregates, bigIntAggregates, booleanAggregates];
 }
 
+/**
+ * Get the aggregate types for accounts
+ * @param idlConfig The IDL for the program
+ * @returns An array of Aggregate types found for the account
+ */
 export function getAccountAggregateTypes(idlConfig: Idl): Operation[] {
     let projectName = config.projectName;
     const accounts = idlConfig.accounts;

@@ -7,6 +7,9 @@ import {
     isDefinedTypeUsedInAccounts,
     getFilterTypeForField,
     getDefinedTypeOfArrayOrVectorField,
+    isTypeArrayOfScalarTypes,
+    isTypeScalarOrArrayOfScalarType,
+    isTypeScalarType,
 } from '../utils';
 import { getBaseAggregateTypes } from '../aggregates_and_distincts';
 
@@ -203,44 +206,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                                         nestedInputsToGenerate =
                                             nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
                                     }
-                                } //else if (
-                                //     Object.keys(field.type)[0] === 'array' ||
-                                //     Object.keys(field.type)[0] === 'vec'
-                                // ) {
-                                //     if ('array' in field.type) {
-                                //         const arrayDetails = field.type.array;
-                                //         if (
-                                //             typeof field.type.array[0] === 'object' &&
-                                //             'defined' in field.type.array[0]
-                                //         ) {
-                                //             const definedTypeDetails = idlConfig.types.filter(
-                                //                 (t) => t.name === field.type['array'][0].defined,
-                                //             )[0];
-                                //             if (definedTypeDetails.type.kind !== 'enum') {
-                                //                 const objectGqlType = getKeyOrGQLTypeForIDLType(field.type);
-                                //                 fields.push({
-                                //                     [field.name]:
-                                //                         convertPascal(projectName) +
-                                //                         '_' +
-                                //                         account.name +
-                                //                         '_' +
-                                //                         field.name +
-                                //                         '_Filters',
-                                //                 });
-                                //                 if (!nestedInputsToGenerate.includes(field.type)) {
-                                //                     nestedInputsToGenerate.push(field.type);
-                                //                 }
-                                //                 // const additionalInputsToBeGenerated = getFilterInputsForObjectType(
-                                //                 //     field.type,
-                                //                 //     idlConfig,
-                                //                 // );
-                                //                 // nestedInputsToGenerate =
-                                //                 //     nestedInputsToGenerate.concat(additionalInputsToBeGenerated);
-                                //             }
-                                //             const a = '';
-                                //         }
-                                //     }
-                                // }
+                                }
                             }
                         }
                     }
@@ -302,7 +268,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
         values = typeDetails.type.fields.map((y: IdlField) => {
             if (typeof y.type !== 'object' || 'defined' in y.type) {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
-                if (key !== 'String' && key !== 'Int' && key !== 'BigInt' && key !== 'Boolean' && key !== 'Byte') {
+                if (!isTypeScalarType(key)) {
                     key += '_Filters';
                 }
                 return {
@@ -326,12 +292,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
                     const fieldTypeStringified = field.type as string;
                     if (typeof fieldTypeStringified !== 'object') {
                         const scalarGQLType = getGqlTypeForIdlScalarType(field.type);
-                        if (
-                            scalarGQLType === 'Int' ||
-                            scalarGQLType === 'BigInt' ||
-                            scalarGQLType === 'String' ||
-                            scalarGQLType === 'Boolean'
-                        ) {
+                        if (isTypeScalarType(scalarGQLType) && scalarGQLType !== 'Byte') {
                             fields.push({
                                 [field.name]: convertPascal(projectName) + '_' + scalarGQLType + '_Aggregate_Filter',
                             });
@@ -351,7 +312,7 @@ export function getAccountFilterTypes(idlConfig: Idl): Operation[] {
     }
 
     for (let sType of [...new Set(baseAggregateFilterTypesToGenerate)]) {
-        if (sType === 'Int' || sType === 'BigInt' || sType === 'String' || sType === 'Boolean') {
+        if (isTypeScalarType(sType) && sType !== 'Byte') {
             const aggregateTypeDetails = baseAggregateTypes.filter(
                 (b) => b[0] === convertPascal(projectName) + '_' + sType + '_Aggregates',
             )[0];
@@ -388,13 +349,7 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                         if (typeof fieldTypeStringified === 'object') {
                             if (Object.keys(field.type)[0] === 'array' || Object.keys(field.type)[0] === 'vec') {
                                 const key = getKeyOrGQLTypeForIDLType(field.type);
-                                if (
-                                    key !== '[String]' &&
-                                    key !== '[Int]' &&
-                                    key !== '[BigInt]' &&
-                                    key !== '[Boolean]' &&
-                                    key !== '[Byte]'
-                                ) {
+                                if (!isTypeArrayOfScalarTypes(key)) {
                                     let values = [];
                                     const filterTypeForField = getFilterTypeForField(key, account.name, field.name);
                                     const filterTypeDetails = getDefinedTypeOfArrayOrVectorField(field, idlConfig);
@@ -408,18 +363,7 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                 if (typeof field.type === 'object') {
                                                     if ('array' in field.type) {
                                                         let key = getKeyOrGQLTypeForIDLType(field.type.array[0]);
-                                                        if (
-                                                            key !== '[String]' &&
-                                                            key !== '[Int]' &&
-                                                            key !== '[BigInt]' &&
-                                                            key !== '[Boolean]' &&
-                                                            key !== '[Byte]' &&
-                                                            key !== 'String' &&
-                                                            key !== 'Int' &&
-                                                            key !== 'BigInt' &&
-                                                            key !== 'Boolean' &&
-                                                            key !== 'Byte'
-                                                        ) {
+                                                        if (!isTypeScalarOrArrayOfScalarType(key)) {
                                                             key = getFilterTypeForField(
                                                                 key,
                                                                 filterTypeDetails.name,
@@ -430,18 +374,7 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                                                         values.push({ [field.name]: key });
                                                     } else if ('vec' in field.type) {
                                                         let key = getKeyOrGQLTypeForIDLType(field.type.vec);
-                                                        if (
-                                                            key !== '[String]' &&
-                                                            key !== '[Int]' &&
-                                                            key !== '[BigInt]' &&
-                                                            key !== '[Boolean]' &&
-                                                            key !== '[Byte]' &&
-                                                            key !== 'String' &&
-                                                            key !== 'Int' &&
-                                                            key !== 'BigInt' &&
-                                                            key !== 'Boolean' &&
-                                                            key !== 'Byte'
-                                                        ) {
+                                                        if (!isTypeScalarOrArrayOfScalarType(key)) {
                                                             key = getFilterTypeForField(
                                                                 key,
                                                                 filterTypeDetails.name,
@@ -480,13 +413,7 @@ export function getComplexArrayFilterTypes(idlConfig: Idl): Operation[] {
                     let key = getKeyOrGQLTypeForIDLType(y.type);
                     if (key.startsWith('[') && key.endsWith(']')) {
                         const filterTypeForField = getFilterTypeForField(key, x.name, y.name);
-                        if (
-                            key !== '[String]' &&
-                            key !== '[Int]' &&
-                            key !== '[BigInt]' &&
-                            key !== '[Boolean]' &&
-                            key !== '[Byte]'
-                        ) {
+                        if (!isTypeArrayOfScalarTypes(key)) {
                             let values = [];
                             const filterTypeDetails = getDefinedTypeOfArrayOrVectorField(y, idlConfig);
                             if (filterTypeDetails.type.kind === 'struct' && filterTypeDetails.type.fields?.length > 0) {

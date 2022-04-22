@@ -44,6 +44,45 @@ export function getKeyOrGQLTypeForIDLType(idlType: IdlType): string {
 }
 
 /**
+ * Check if a type name is one of the scalar types
+ * @param typeName The GraphQL type name
+ * @returns If the type name is one of the scalar types
+ */
+export function isTypeScalarType(typeName: string): boolean {
+    return (
+        typeName === 'String' ||
+        typeName === 'Int' ||
+        typeName === 'BigInt' ||
+        typeName === 'Boolean' ||
+        typeName === 'Byte'
+    );
+}
+
+/**
+ * Check if a type name is an array of the scalar types
+ * @param typeName The GraphQL type name
+ * @returns If the type name is an array of the scalar types
+ */
+export function isTypeArrayOfScalarTypes(typeName: string): boolean {
+    return (
+        typeName === '[String]' ||
+        typeName === '[Int]' ||
+        typeName === '[BigInt]' ||
+        typeName === '[Boolean]' ||
+        typeName === '[Byte]'
+    );
+}
+
+/**
+ * Check if a type name is a scalar type or an array of the scalar types
+ * @param typeName The GraphQL type name
+ * @returns If the type name is a scalar type an array of the scalar types
+ */
+export function isTypeScalarOrArrayOfScalarType(typeName: string): boolean {
+    return isTypeScalarType(typeName) || isTypeArrayOfScalarTypes(typeName);
+}
+
+/**
  * The function takes an IDL object type and returns it's corresponding GraphQL type.
  * This should only be used for object types and not for scalar types.
  * @param idlObjectType The IDL type
@@ -118,6 +157,15 @@ export function isSpecialEnum(operation: Operation): boolean {
  */
 export function convertPascal(value: string): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/**
+ * Turn a string to camel case
+ * @param str The string to convert to camel case
+ * @returns The input string converted to camel case
+ */
+export function camelCase(str: string) {
+    return str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase());
 }
 
 /**

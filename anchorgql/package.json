@@ -1,7 +1,7 @@
 {
-    "name": "anchorgqlbuilder",
+    "name": "anchorgql",
     "version": "1.0.0",
-    "main": "builder.js",
+    "main": "src/index.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "npm install && ts-node ./src/index.ts && cd src/server && npm start",
@@ -9,22 +9,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://dassy4@bitbucket.org/serumpulse/anchorgqlbuilder.git"
+        "url": "https://github.com/vybenetwork/anchorgql"
     },
-    "author": "",
+    "author": "Arun Dass, Vivek Sharma",
     "license": "ISC",
-    "homepage": "https://bitbucket.org/serumpulse/anchorgqlbuilder#readme",
-    "dependencies": {
-        "fs-extra": "^10.0.0",
-        "lodash": "^4.17.21"
-    },
+    "homepage": "https://github.com/vybenetwork/anchorgql",
     "devDependencies": {
-        "@types/fs-extra": "^9.0.13",
-        "@types/lodash": "^4.14.177",
         "@types/node": "^16.11.7",
-        "nodemon": "^2.0.15",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4"
-    },
-    "description": ""
+    }
 }

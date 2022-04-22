@@ -1,6 +1,6 @@
 import { Idl, IdlField, IdlType, Operation } from '../types';
 import * as config from '../config.json';
-import { convertPascal, getGqlTypeForIdlScalarType, getKeyOrGQLTypeForIDLType } from '../utils';
+import { convertPascal, getGqlTypeForIdlScalarType, getKeyOrGQLTypeForIDLType, isTypeScalarType } from '../utils';
 
 /**
  * Get the base inputs order
@@ -149,7 +149,7 @@ export function getAccountOrderByTypes(idlConfig: Idl): Operation[] {
         values = typeDetails.type.fields.map((y: IdlField) => {
             if (typeof y.type !== 'object' || 'defined' in y.type) {
                 let key = getKeyOrGQLTypeForIDLType(y.type);
-                if (key !== 'String' && key !== 'Int' && key !== 'BigInt' && key !== 'Boolean') {
+                if (!isTypeScalarType(key)) {
                     key += '_OrderBy';
                 }
                 return {

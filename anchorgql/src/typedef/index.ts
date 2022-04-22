@@ -2,7 +2,7 @@ import { Idl, Operation } from '../types';
 import { getAccountRootTypes, getAccountTypes, getQueryType, getRootType } from '../queries';
 import { getEnumTypes, getStructTypes } from '../types/index';
 import * as config from '../config.json';
-import { convertPascal, isSpecialEnum } from '../utils';
+import { convertPascal, isSpecialEnum, isTypeScalarType } from '../utils';
 import { readFile, writeFile } from 'fs/promises';
 import { getFilterInputsForBaseTypes, getAccountFilterTypes, getComplexArrayFilterTypes } from '../filters';
 import { getAccountOrderByTypes, getBaseInputForOrders } from '../orders';
@@ -120,7 +120,7 @@ export function buildTypeForOrderBy(mapping: Operation[]): string {
                 let returnType = `\ninput ${x[0]} {`;
                 for (let k of Object.keys(x[1])) {
                     let fType = x[1][k];
-                    if (fType === 'String' || fType === 'Int' || fType === 'BigInt' || fType === 'Boolean') {
+                    if (isTypeScalarType(fType) && fType !== 'Byte') {
                         returnType += '\n\t' + k + ': ' + convertPascal(projectName) + '_OrderBy';
                     } else {
                         returnType += '\n\t' + k + ': ' + x[1][k];
@@ -153,6 +153,11 @@ function getEnumStringForAccounts(idlConfig: Idl): string {
     } else return null;
 }
 
+/**
+ * Generates GraphQL SDL type for a list of type mappings for aggregations
+ * @param mapping A list of types to convert from {@link Operations} type to an SDL compitable GraphQL type
+ * @returns
+ */
 export function buildTypeForAggregates(mapping: Operation[]): string {
     if (mapping.length > 0) {
         const projectName = config.projectName;
@@ -183,10 +188,9 @@ export function buildTypeForAggregates(mapping: Operation[]): string {
 
 /**
  * Get the string for utilities for the program
- * @param idlConfig The IDL File for the Smart Contract
  * @returns A valid GraphQL string for utility methods for the API
  */
-function getUtilsTypeString(idlConfig: Idl): string {
+function getUtilsTypeString(): string {
     const projectName = config.projectName;
     const returnString = `\ntype ${
         convertPascal(projectName) + '_Utils'
@@ -234,16 +238,11 @@ export async function buildTypeDef(
     let structTypesStr = await buildType(structTypes);
     let enumTypesStr = await buildType(enumTypes, { isEnumString: true });
     let enumAccountsStr = getEnumStringForAccounts(idlConfig);
-    let programsUtilsString = getUtilsTypeString(idlConfig);
+    let programsUtilsString = getUtilsTypeString();
     let additionalDataInfoType = `\n\ntype ${
         convertPascal(config.projectName) + '_' + 'Data_Fields_Info'
     } {\n\tmessage: String\n}\n`;
-    let typesStr =
-        structTypesStr +
-        enumTypesStr +
-        additionalDataInfoType +
-        enumAccountsStr +
-        programsUtilsString; /* + instructionInputTypesStr */
+    let typesStr = structTypesStr + enumTypesStr + additionalDataInfoType + enumAccountsStr + programsUtilsString;
 
     let baseFilterInputsStr = await buildType(baseInputFilters, { isInputString: true });
     let accountFilterInputsStr = buildTypeForFilters(accountFilterTypes);
