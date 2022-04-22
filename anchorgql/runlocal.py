@@ -45,10 +45,10 @@ def create_project_config(path, content):
 
 
 async def check_and_replace_with_new_idl(program_id, idl_path, anchor_provider_url):
-    client = AsyncClient(anchor_provider_url)
-    provider = Provider(client, Wallet.local())
-    program_id = PublicKey(program_id)
     try:
+        client = AsyncClient(anchor_provider_url)
+        provider = Provider(client, Wallet.local())
+        program_id = PublicKey(program_id)
         idl = await Program.fetch_raw_idl(
             program_id, provider
         )
