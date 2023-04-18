@@ -1,5 +1,6 @@
 # About
 
+NOTE: This repo is no longer under active development or maintenance.
 The project creates a GraphQL Apollo server from an IDL file.
 
 ## Prerequesites
